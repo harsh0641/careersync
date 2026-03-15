@@ -1,7 +1,7 @@
 """
 pages/1_Dashboard.py — CareerSync Dashboard
-- Refresh: stays logged in on same page
-- Logout: goes to clean home URL with no uid param
+Persistent login via ?uid= query param.
+Logout clears session + URL so user lands on clean home page.
 """
 
 import os, sys, math
@@ -20,11 +20,15 @@ st.set_page_config(
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PERSISTENT LOGIN — survives refresh via ?uid= in URL
+# PERSISTENT LOGIN
 # ══════════════════════════════════════════════════════════════════════════════
 def _restore():
+    """Restore session from ?uid= — skip if user explicitly logged out."""
     if st.session_state.get("user"):
         return True
+    # Don't auto-restore if user just logged out
+    if st.session_state.get("logged_out"):
+        return False
     uid = st.query_params.get("uid", "")
     if uid:
         user = get_user_by_id(uid)
@@ -35,27 +39,28 @@ def _restore():
     return False
 
 def _logout():
-    # Clear session completely
-    for k in ["user", "user_id", "logged_out"]:
+    """
+    Full logout:
+    1. Set logged_out flag so restore doesn't re-login
+    2. Clear session
+    3. Clear ALL query params (removes ?uid= from URL)
+    4. Switch to home — URL will be clean with no params
+    """
+    st.session_state["logged_out"] = True
+    for k in ["user", "user_id"]:
         st.session_state.pop(k, None)
-    # Clear uid from URL and redirect browser to clean home URL
     st.query_params.clear()
-    st.markdown("""
-    <script>
-        window.location.href = "/";
-    </script>
-    """, unsafe_allow_html=True)
-    st.stop()
+    st.switch_page("app.py")
 
 if not _restore():
-    # No session, no uid in URL — send to home
+    # Not logged in and no uid in URL — go to home
     st.query_params.clear()
     st.switch_page("app.py")
     st.stop()
 
 user = st.session_state["user"]
 
-# Always keep ?uid= in URL so refresh works
+# Keep ?uid= fresh in URL on every dashboard load (survives refresh)
 st.query_params["uid"] = user["id"]
 inject_gmail_env(user)
 
@@ -141,6 +146,7 @@ with st.sidebar:
 
     if st.button("🚪  Logout", key="sidebar_logout", use_container_width=True):
         _logout()
+        st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # GLOBAL CSS
