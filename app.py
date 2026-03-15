@@ -1,9 +1,9 @@
 """
 app.py — CareerSync Landing + Login + Register
-Matches reference image 2 exactly:
-- Clean minimal navbar: Features | How it Works | Pricing | Log In | Get Started Free
-- Simple professional design
-- No floating buttons
+Matches new reference design exactly:
+- Inter font, white bg, minimal
+- Navbar: logo (no link) + nav links + Log in + Start Tracking
+- Clean hero, features, stats, dark CTA, simple footer
 """
 
 import os, sys
@@ -48,7 +48,6 @@ def go(view: str):
 
 _restore_session()
 
-# Route from HTML anchor clicks
 _nav = st.query_params.get("nav", "")
 if _nav == "login":
     st.query_params.clear()
@@ -67,14 +66,14 @@ if "auth_view" not in st.session_state:
 # ── Hide Streamlit chrome ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 #MainMenu,header,footer,[data-testid="stToolbar"],[data-testid="stDecoration"],
 [data-testid="stStatusWidget"],[data-testid="stSidebar"],
 [data-testid="collapsedControl"],[data-testid="stHeader"]{display:none!important;}
 html,body,.stApp,[data-testid="stAppViewContainer"],
 section.main,[data-testid="stMain"]{
-  background:#f0f2f5!important;
-  font-family:'DM Sans',sans-serif!important;
+  background:#fff!important;
+  font-family:'Inter',sans-serif!important;
   margin:0!important;padding:0!important;
 }
 .block-container{padding:0!important;max-width:100%!important;margin:0!important;}
@@ -90,415 +89,365 @@ if st.session_state.auth_view == "landing":
     st.markdown("""
     <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'DM Sans',sans-serif;background:#f0f2f5;color:#0f172a;}
+    body{font-family:'Inter',sans-serif;background:#fff;color:#0f172a;-webkit-font-smoothing:antialiased;}
 
-    /* ── NAVBAR — matches image 2 exactly ── */
+    /* ── NAVBAR ── */
     .nav{
-      width:100%;background:#fff;
-      border-bottom:1px solid #e8eaf0;
-      height:60px;display:flex;align-items:center;
-      justify-content:space-between;padding:0 2.5rem;
+      width:100%;background:rgba(255,255,255,0.85);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid #f1f5f9;
+      height:64px;display:flex;align-items:center;
+      justify-content:space-between;padding:0 2rem;
       position:sticky;top:0;z-index:999;
     }
-    .nav-logo{
-      display:flex;align-items:center;gap:8px;
-      font-size:1.05rem;font-weight:700;color:#0f172a;text-decoration:none;
+    .nav-left{display:flex;align-items:center;gap:8px;}
+    .nav-icon{
+      width:32px;height:32px;border-radius:8px;
+      background:#2563EB;display:flex;align-items:center;justify-content:center;
     }
-    .nav-logo-svg{color:#2563EB;}
-    .nav-links{display:flex;align-items:center;gap:28px;}
-    .nav-link{
-      font-size:0.85rem;font-weight:500;color:#64748b;
-      text-decoration:none;transition:color 0.15s;
-    }
+    .nav-icon svg{color:#fff;}
+    .nav-brand{font-size:1.1rem;font-weight:700;color:#0f172a;letter-spacing:-0.3px;}
+    .nav-links{display:flex;align-items:center;gap:32px;}
+    .nav-link{font-size:0.875rem;font-weight:500;color:#64748b;text-decoration:none;transition:color 0.15s;}
     .nav-link:hover{color:#0f172a;}
-    .nav-login{
-      font-size:0.85rem;font-weight:500;color:#64748b;
-      text-decoration:none;transition:color 0.15s;
-    }
-    .nav-login:hover{color:#0f172a;}
+    .nav-right{display:flex;align-items:center;gap:16px;}
+    .nav-login{font-size:0.875rem;font-weight:600;color:#0f172a;text-decoration:none;transition:color 0.15s;}
+    .nav-login:hover{color:#2563EB;}
     .nav-cta{
       background:#2563EB;color:#fff;border:none;border-radius:8px;
-      padding:8px 18px;font-size:0.85rem;font-weight:600;
-      cursor:pointer;text-decoration:none;display:inline-block;
-      font-family:'DM Sans',sans-serif;transition:background 0.15s;
+      padding:9px 20px;font-size:0.875rem;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;
+      text-decoration:none;display:inline-block;
+      transition:all 0.15s;letter-spacing:-0.1px;
     }
-    .nav-cta:hover{background:#1d4ed8;}
+    .nav-cta:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,0.3);}
 
     /* ── HERO ── */
     .hero{
-      max-width:1200px;margin:0 auto;padding:72px 2.5rem 56px;
-      display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;
+      max-width:1120px;margin:0 auto;padding:96px 2rem 80px;
+      display:grid;grid-template-columns:7fr 5fr;gap:64px;align-items:center;
     }
-    @media(max-width:860px){.hero{grid-template-columns:1fr;padding:40px 1.5rem;}}
+    @media(max-width:900px){.hero{grid-template-columns:1fr;padding:56px 1.5rem;gap:40px;}}
 
-    .badge{
+    .hero-announce{
       display:inline-flex;align-items:center;gap:6px;
-      padding:4px 12px;border-radius:9999px;
-      background:rgba(37,99,235,0.07);border:1px solid rgba(37,99,235,0.15);
-      font-size:0.68rem;font-weight:700;color:#2563EB;
-      text-transform:uppercase;letter-spacing:0.8px;margin-bottom:18px;
+      padding:4px 14px;border-radius:9999px;
+      border:1px solid #e2e8f0;font-size:0.8rem;color:#64748b;
+      margin-bottom:28px;cursor:default;
     }
-    .badge-dot{
-      width:5px;height:5px;border-radius:50%;background:#2563EB;
-      display:inline-block;animation:blink 2s infinite;
-    }
-    @keyframes blink{0%,100%{opacity:1;}50%{opacity:0.3;}}
+    .hero-announce a{font-weight:600;color:#2563EB;text-decoration:none;}
+    .hero-announce a:hover{text-decoration:underline;}
 
     .hero h1{
-      font-size:clamp(2rem,4vw,3.5rem);font-weight:700;
-      color:#0d1b2a;line-height:1.08;letter-spacing:-1px;margin-bottom:16px;
+      font-size:clamp(2.6rem,5vw,4.2rem);font-weight:800;
+      color:#0f172a;line-height:1.04;letter-spacing:-2px;margin-bottom:20px;
     }
     .hero h1 .blue{color:#2563EB;}
 
     .hero-desc{
-      font-size:0.95rem;color:#64748b;line-height:1.7;
-      margin-bottom:28px;max-width:460px;
+      font-size:1rem;color:#64748b;line-height:1.75;
+      margin-bottom:36px;max-width:480px;
     }
 
-    .email-row{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
-    .email-wrap{flex:1;min-width:180px;position:relative;}
-    .email-icon{
-      position:absolute;left:12px;top:50%;transform:translateY(-50%);
-      font-size:0.85rem;color:#94a3b8;
-    }
-    .email-input{
-      width:100%;padding:12px 12px 12px 36px;
-      border-radius:10px;border:1.5px solid #e2e8f0;
-      background:#fff;font-size:0.875rem;
-      font-family:'DM Sans',sans-serif;outline:none;
-      box-shadow:0 1px 3px rgba(0,0,0,0.04);
-    }
-    .email-input:focus{
-      border-color:#2563EB;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.08);
-    }
-    .btn-start{
+    .hero-btns{display:flex;align-items:center;gap:20px;margin-bottom:40px;flex-wrap:wrap;}
+    .btn-primary{
       background:#2563EB;color:#fff;border:none;border-radius:10px;
-      padding:12px 22px;font-size:0.875rem;font-weight:700;
-      cursor:pointer;font-family:'DM Sans',sans-serif;
-      white-space:nowrap;text-decoration:none;display:inline-block;
-      box-shadow:0 2px 8px rgba(37,99,235,0.25);transition:all 0.15s;
+      padding:14px 28px;font-size:0.95rem;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;
+      text-decoration:none;display:inline-block;
+      box-shadow:0 4px 14px rgba(37,99,235,0.25);
+      transition:all 0.15s;letter-spacing:-0.2px;
     }
-    .btn-start:hover{background:#1d4ed8;}
+    .btn-primary:hover{background:#1d4ed8;box-shadow:0 6px 20px rgba(37,99,235,0.35);transform:translateY(-1px);}
+    .btn-ghost{
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:0.875rem;font-weight:600;color:#0f172a;
+      text-decoration:none;transition:color 0.15s;
+    }
+    .btn-ghost:hover{color:#2563EB;}
 
-    .social-row{display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#64748b;}
-    .avatars{display:flex;}
-    .av{
-      width:28px;height:28px;border-radius:50%;
-      border:2px solid #f0f2f5;
+    .trusted{display:flex;align-items:center;gap:16px;opacity:0.55;}
+    .trusted-lbl{font-size:0.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:#94a3b8;}
+    .trusted-names{display:flex;gap:20px;}
+    .trusted-name{font-size:0.82rem;font-weight:700;color:#64748b;letter-spacing:0.3px;}
+
+    /* ── HERO RIGHT (dashboard preview) ── */
+    .hero-visual{
+      background:#fff;border-radius:16px;
+      border:1px solid #e2e8f0;padding:8px;
+      box-shadow:0 20px 60px -12px rgba(0,0,0,0.12);
+      position:relative;
+    }
+    .hero-visual-inner{
+      height:380px;border-radius:10px;
+      background:#f8fafc;
       display:flex;align-items:center;justify-content:center;
-      font-size:0.58rem;font-weight:700;color:#fff;margin-left:-7px;
+      overflow:hidden;position:relative;
     }
-    .av:first-child{margin-left:0;}
-
-    /* ── MOCK DASHBOARD ── */
-    .mock-outer{position:relative;}
-    .mock-glow{
-      position:absolute;inset:-30px;
-      background:radial-gradient(circle,rgba(37,99,235,0.08) 0%,transparent 70%);
+    .hero-visual-placeholder{
+      display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0.15;
+    }
+    .hero-visual-placeholder svg{width:72px;height:72px;color:#2563EB;}
+    .hero-visual-placeholder .line{height:8px;border-radius:9999px;background:#cbd5e1;}
+    .hero-accent{
+      position:absolute;top:-60px;right:-60px;
+      width:240px;height:240px;border-radius:50%;
+      background:rgba(37,99,235,0.05);filter:blur(60px);
       pointer-events:none;
     }
-    .mock-card{
-      position:relative;background:#fff;
-      border:1px solid #e2e8f0;border-radius:20px;
-      padding:6px;box-shadow:0 16px 48px -12px rgba(0,0,0,0.14);
-    }
-    .mock-inner{
-      background:#f8fafc;border-radius:16px;
-      border:1px solid #f0f2f5;padding:16px;
-    }
-    .mock-bar{
-      background:#fff;border-radius:10px;padding:10px 14px;
-      display:flex;align-items:center;justify-content:space-between;
-      margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,0.05);
-    }
-    .mock-bar-left{display:flex;align-items:center;gap:6px;font-weight:700;font-size:0.82rem;color:#0f172a;}
-    .mock-sync-btn{
-      background:#2563EB;color:#fff;font-size:0.68rem;font-weight:700;
-      padding:6px 12px;border-radius:7px;
-    }
-    .mock-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
-    .mock-stat{
-      background:#fff;border-radius:10px;padding:12px;
-      border:1px solid #f0f2f5;box-shadow:0 1px 2px rgba(0,0,0,0.03);
-    }
-    .mock-num{font-size:1.4rem;font-weight:700;color:#0f172a;line-height:1;}
-    .mock-lbl{font-size:0.58rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-top:3px;}
-    .mock-row{
-      background:#fff;border-radius:10px;padding:10px 12px;
-      display:flex;align-items:center;justify-content:space-between;
-      margin-bottom:7px;border:1px solid #f0f2f5;
-    }
-    .mock-row:last-child{margin-bottom:0;}
-    .mock-co{display:flex;align-items:center;gap:9px;}
-    .mock-logo{
-      width:28px;height:28px;border-radius:8px;background:#f0f2f5;
-      display:flex;align-items:center;justify-content:center;
-      font-size:0.68rem;font-weight:700;color:#475569;
-    }
-    .mock-co-name{font-size:0.82rem;font-weight:600;color:#0f172a;}
-    .mock-co-role{font-size:0.68rem;color:#94a3b8;}
-    .b-iv{background:#fef9c3;color:#ca8a04;padding:2px 9px;border-radius:20px;font-size:0.65rem;font-weight:700;}
-    .b-of{background:#dcfce7;color:#16a34a;padding:2px 9px;border-radius:20px;font-size:0.65rem;font-weight:700;}
-
-    /* ── SOCIAL PROOF ── */
-    .proof{
-      padding:28px 2.5rem;
-      border-top:1px solid #e8eaf0;border-bottom:1px solid #e8eaf0;
-      background:#fff;
-    }
-    .proof-inner{max-width:1200px;margin:0 auto;text-align:center;}
-    .proof-lbl{font-size:0.65rem;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:18px;}
-    .proof-logos{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;opacity:0.25;}
-    .proof-logo{width:76px;height:22px;background:#94a3b8;border-radius:3px;}
 
     /* ── FEATURES ── */
-    .features-wrap{background:#fff;padding:72px 2.5rem;}
-    .features{max-width:1200px;margin:0 auto;}
-    .sec-title{font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:700;color:#0d1b2a;text-align:center;margin-bottom:8px;letter-spacing:-0.3px;}
-    .sec-sub{font-size:0.9rem;color:#64748b;text-align:center;margin-bottom:44px;line-height:1.65;max-width:540px;margin-left:auto;margin-right:auto;}
-    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+    .feat-section{
+      background:#f8fafc;border-top:1px solid #f1f5f9;
+      border-bottom:1px solid #f1f5f9;padding:80px 2rem;
+    }
+    .feat-inner{max-width:1120px;margin:0 auto;}
+    .feat-label{
+      font-size:0.72rem;font-weight:600;color:#2563EB;
+      text-transform:uppercase;letter-spacing:1.2px;
+      text-align:center;margin-bottom:10px;
+    }
+    .feat-title{
+      font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:700;
+      color:#0f172a;text-align:center;margin-bottom:10px;letter-spacing:-0.5px;
+    }
+    .feat-sub{
+      font-size:0.95rem;color:#64748b;text-align:center;
+      line-height:1.65;max-width:520px;margin:0 auto 52px;
+    }
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
     @media(max-width:768px){.feat-grid{grid-template-columns:1fr;}}
     .feat-card{
-      background:#f8fafc;border:1px solid #e8eaf0;border-radius:14px;
-      padding:28px;transition:all 0.2s;
+      background:#fff;border:1px solid #f1f5f9;border-radius:16px;
+      padding:32px;transition:all 0.2s;
     }
-    .feat-card:hover{background:#fff;box-shadow:0 8px 24px -6px rgba(37,99,235,0.08);border-color:rgba(37,99,235,0.2);}
-    .feat-icon{width:40px;height:40px;border-radius:10px;background:rgba(37,99,235,0.08);display:flex;align-items:center;justify-content:center;font-size:1.2rem;margin-bottom:14px;}
-    .feat-title{font-size:0.95rem;font-weight:700;color:#0d1b2a;margin-bottom:8px;}
-    .feat-desc{font-size:0.82rem;color:#64748b;line-height:1.6;}
+    .feat-card:hover{box-shadow:0 12px 32px -8px rgba(0,0,0,0.08);border-color:#e2e8f0;}
+    .feat-card-icon{
+      width:44px;height:44px;border-radius:10px;
+      background:rgba(37,99,235,0.08);
+      display:flex;align-items:center;justify-content:center;
+      margin-bottom:16px;font-size:1.2rem;transition:all 0.2s;
+    }
+    .feat-card:hover .feat-card-icon{background:#2563EB;}
+    .feat-card-title{font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:8px;}
+    .feat-card-desc{font-size:0.85rem;color:#64748b;line-height:1.65;margin-bottom:16px;}
+    .feat-card-link{font-size:0.82rem;font-weight:600;color:#2563EB;text-decoration:none;}
+    .feat-card-link:hover{text-decoration:underline;}
 
     /* ── STATS ── */
-    .stats-wrap{padding:0 2rem;margin-bottom:0;}
-    .stats{
-      max-width:1200px;margin:0 auto;
-      background:#0d1b2a;border-radius:18px;
-      padding:52px 3rem;margin-bottom:0;
+    .stats-section{padding:80px 2rem;}
+    .stats-inner{max-width:1120px;margin:0 auto;}
+    .stats-title{font-size:clamp(1.6rem,2.5vw,2.2rem);font-weight:700;color:#0f172a;text-align:center;margin-bottom:8px;letter-spacing:-0.5px;}
+    .stats-sub{font-size:0.95rem;color:#64748b;text-align:center;margin-bottom:48px;}
+    .stats-grid{
+      display:grid;grid-template-columns:repeat(4,1fr);
+      border:1px solid #f1f5f9;border-radius:16px;overflow:hidden;
     }
-    .stats-inner{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center;}
-    @media(max-width:768px){.stats-inner{grid-template-columns:repeat(2,1fr);}}
-    .stat-big{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:700;color:#fff;line-height:1;}
-    .stat-lbl{font-size:0.65rem;color:#64748b;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-top:8px;}
+    @media(max-width:768px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+    .stat-cell{
+      background:#f8fafc;padding:32px 20px;text-align:center;
+      border-right:1px solid #f1f5f9;
+    }
+    .stat-cell:last-child{border-right:none;}
+    .stat-num{font-size:1.9rem;font-weight:700;color:#2563EB;letter-spacing:-0.5px;margin-bottom:4px;}
+    .stat-lbl{font-size:0.78rem;font-weight:500;color:#64748b;}
 
     /* ── CTA ── */
-    .cta-wrap{background:rgba(37,99,235,0.03);padding:72px 2.5rem;}
-    .cta{max-width:600px;margin:0 auto;text-align:center;}
-    .cta h2{font-size:clamp(1.7rem,3.5vw,2.6rem);font-weight:700;color:#0d1b2a;margin-bottom:12px;letter-spacing:-0.5px;}
-    .cta p{font-size:0.95rem;color:#64748b;margin-bottom:32px;line-height:1.7;}
-    .cta-btns{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+    .cta-section{
+      background:#0f172a;padding:80px 2rem;
+      position:relative;overflow:hidden;
+    }
+    .cta-blob{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      width:600px;height:300px;
+      background:linear-gradient(135deg,rgba(37,99,235,0.3),rgba(99,102,241,0.2));
+      filter:blur(80px);border-radius:50%;pointer-events:none;
+    }
+    .cta-inner{max-width:640px;margin:0 auto;text-align:center;position:relative;z-index:1;}
+    .cta h2{font-size:clamp(1.7rem,3vw,2.5rem);font-weight:700;color:#fff;margin-bottom:14px;letter-spacing:-0.5px;line-height:1.2;}
+    .cta p{font-size:0.95rem;color:#94a3b8;margin-bottom:36px;line-height:1.7;}
+    .cta-btns{display:flex;justify-content:center;align-items:center;gap:20px;flex-wrap:wrap;}
     .btn-cta-p{
-      background:#2563EB;color:#fff;border:none;border-radius:9px;
-      padding:12px 26px;font-size:0.9rem;font-weight:700;
-      cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;
-      box-shadow:0 2px 8px rgba(37,99,235,0.25);transition:all 0.15s;display:inline-block;
+      background:#2563EB;color:#fff;border:none;border-radius:10px;
+      padding:14px 28px;font-size:0.95rem;font-weight:700;
+      cursor:pointer;font-family:'Inter',sans-serif;
+      text-decoration:none;display:inline-block;
+      box-shadow:0 4px 14px rgba(37,99,235,0.35);transition:all 0.15s;
     }
     .btn-cta-p:hover{background:#1d4ed8;}
     .btn-cta-s{
-      background:#fff;color:#0f172a;border:1.5px solid #e2e8f0;border-radius:9px;
-      padding:12px 26px;font-size:0.9rem;font-weight:600;
-      cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:none;
-      transition:all 0.15s;display:inline-block;
+      display:inline-flex;align-items:center;gap:6px;
+      font-size:0.875rem;font-weight:600;color:#fff;
+      text-decoration:none;transition:color 0.15s;
     }
-    .btn-cta-s:hover{border-color:#94a3b8;}
+    .btn-cta-s:hover{color:#93c5fd;}
 
     /* ── FOOTER ── */
-    .footer{background:#fff;border-top:1px solid #e8eaf0;padding:52px 2.5rem 24px;}
-    .footer-grid{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:36px;margin-bottom:36px;}
-    @media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;}}
-    .f-logo{display:flex;align-items:center;gap:7px;font-size:0.95rem;font-weight:700;color:#0f172a;margin-bottom:10px;}
-    .f-desc{font-size:0.82rem;color:#64748b;line-height:1.6;max-width:210px;}
-    .f-col-title{font-size:0.8rem;font-weight:700;color:#0f172a;margin-bottom:14px;text-transform:uppercase;letter-spacing:0.4px;}
-    .f-links{display:flex;flex-direction:column;gap:9px;}
-    .f-link{font-size:0.82rem;color:#64748b;text-decoration:none;}
-    .f-link:hover{color:#2563EB;}
-    .f-bottom{max-width:1200px;margin:0 auto;padding-top:20px;border-top:1px solid #e8eaf0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;}
-    .f-copy{font-size:0.75rem;color:#94a3b8;}
+    .footer{
+      background:#fff;border-top:1px solid #f1f5f9;
+      padding:24px 2rem;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:12px;
+    }
+    .footer-inner{max-width:1120px;margin:0 auto;width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+    .footer-copy{font-size:0.75rem;color:#94a3b8;}
+    .footer-icons{display:flex;gap:16px;}
+    .footer-icon{color:#94a3b8;text-decoration:none;transition:color 0.15s;}
+    .footer-icon:hover{color:#64748b;}
     </style>
 
     <!-- NAVBAR -->
     <nav class="nav">
-      <a class="nav-logo" href="/">
-        <svg class="nav-logo-svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-        </svg>
-        CareerSync
-      </a>
+      <div class="nav-left">
+        <div class="nav-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+        </div>
+        <span class="nav-brand">CareerSync</span>
+      </div>
       <div class="nav-links">
         <a class="nav-link" href="#features">Features</a>
         <a class="nav-link" href="#how-it-works">How it Works</a>
         <a class="nav-link" href="#pricing">Pricing</a>
-        <a class="nav-login" href="/?nav=login">Log In</a>
-        <a class="nav-cta"   href="/?nav=signup">Get Started Free</a>
+      </div>
+      <div class="nav-right">
+        <a class="nav-login" href="/?nav=login">Log in</a>
+        <a class="nav-cta"   href="/?nav=signup">Start Tracking</a>
       </div>
     </nav>
 
     <!-- HERO -->
     <section class="hero">
       <div>
-        <div class="badge"><span class="badge-dot"></span> AI-Powered Job Hunting</div>
-        <h1>Automated Job Application <span class="blue">Tracker</span> &amp; Recruiter Research</h1>
-        <p class="hero-desc">Streamline your job search with CareerSync. Automatically track applications, research recruiters, and generate AI-powered outreach emails in one professional dashboard.</p>
-        <div class="email-row">
-          <div class="email-wrap">
-            <span class="email-icon">✉️</span>
-            <input class="email-input" placeholder="Enter your work email" type="email"/>
-          </div>
-          <a class="btn-start" href="/?nav=signup">Start Tracking</a>
+        <div class="hero-announce">
+          Introducing the new Skill Roadmap.
+          <a href="/?nav=signup">Read more →</a>
         </div>
-        <div class="social-row">
-          <div class="avatars">
-            <div class="av" style="background:#818cf8;">JK</div>
-            <div class="av" style="background:#38bdf8;">AM</div>
-            <div class="av" style="background:#94a3b8;">SR</div>
+        <h1>Master your <span class="blue">career<br>trajectory.</span></h1>
+        <p class="hero-desc">The minimalist tracking tool for modern professionals. Manage applications, cultivate networking relationships, and bridge skill gaps in one clean workspace.</p>
+        <div class="hero-btns">
+          <a class="btn-primary" href="/?nav=signup">Get Started for Free</a>
+          <a class="btn-ghost"   href="/?nav=login">
+            Watch demo
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/>
+            </svg>
+          </a>
+        </div>
+        <div class="trusted">
+          <span class="trusted-lbl">Trusted by pros at</span>
+          <div class="trusted-names">
+            <span class="trusted-name">FORBES</span>
+            <span class="trusted-name">TECHHUBS</span>
+            <span class="trusted-name">MODERN.CO</span>
           </div>
-          <span>Joined by 10k+ active job seekers</span>
         </div>
       </div>
-      <div class="mock-outer">
-        <div class="mock-glow"></div>
-        <div class="mock-card">
-          <div class="mock-inner">
-            <div class="mock-bar">
-              <div class="mock-bar-left">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-                </svg>
-                CareerSync
-              </div>
-              <span class="mock-sync-btn">Sync Gmail</span>
-            </div>
-            <div class="mock-stats">
-              <div class="mock-stat"><div class="mock-num">24</div><div class="mock-lbl">Applications</div></div>
-              <div class="mock-stat"><div class="mock-num">6</div><div class="mock-lbl">Interviews</div></div>
-              <div class="mock-stat"><div class="mock-num">18</div><div class="mock-lbl">Recruiters</div></div>
-            </div>
-            <div class="mock-row">
-              <div class="mock-co">
-                <div class="mock-logo">G</div>
-                <div><div class="mock-co-name">Google</div><div class="mock-co-role">Software Engineer</div></div>
-              </div>
-              <span class="b-iv">Interview</span>
-            </div>
-            <div class="mock-row">
-              <div class="mock-co">
-                <div class="mock-logo">S</div>
-                <div><div class="mock-co-name">Stripe</div><div class="mock-co-role">Full Stack Engineer</div></div>
-              </div>
-              <span class="b-of">Offer</span>
+      <div style="position:relative;">
+        <div class="hero-accent"></div>
+        <div class="hero-visual">
+          <div class="hero-visual-inner">
+            <div class="hero-visual-placeholder">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="1.5">
+                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              </svg>
+              <div class="line" style="width:160px;"></div>
+              <div class="line" style="width:100px;"></div>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- SOCIAL PROOF -->
-    <div class="proof">
-      <div class="proof-inner">
-        <div class="proof-lbl">Trusted by candidates hired at</div>
-        <div class="proof-logos">
-          <div class="proof-logo"></div><div class="proof-logo"></div>
-          <div class="proof-logo"></div><div class="proof-logo"></div>
-          <div class="proof-logo"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- FEATURES -->
-    <div id="features" class="features-wrap">
-      <div class="features">
-        <div class="sec-title">Powerful Features for Modern Job Seekers</div>
-        <div class="sec-sub">Everything you need to land your next role faster, without the manual spreadsheet maintenance.</div>
+    <section id="features" class="feat-section">
+      <div class="feat-inner">
+        <div class="feat-label">Built for Clarity</div>
+        <div class="feat-title">Everything you need, nothing you don't.</div>
+        <div class="feat-sub">We've stripped away the noise to help you focus on what actually moves the needle in your career development.</div>
         <div class="feat-grid">
           <div class="feat-card">
-            <div class="feat-icon">📬</div>
-            <div class="feat-title">Gmail Sync</div>
-            <div class="feat-desc">Automatically pull job applications directly from your inbox. No manual entry, no missed opportunities.</div>
+            <div class="feat-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+            </div>
+            <div class="feat-card-title">Application Tracker</div>
+            <div class="feat-card-desc">Visual pipelines to monitor every job application from initial contact to the final signed offer.</div>
+            <a class="feat-card-link" href="/?nav=signup">Learn more →</a>
           </div>
           <div class="feat-card">
-            <div class="feat-icon">🧠</div>
-            <div class="feat-title">AI Enrichment</div>
-            <div class="feat-desc">Get deep insights on companies and recruiters. Know their recent funding, news, and interview style.</div>
+            <div class="feat-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+              </svg>
+            </div>
+            <div class="feat-card-title">Networking CRM</div>
+            <div class="feat-card-desc">A professional relationship manager designed to keep mentors and peers within reach with smart follow-ups.</div>
+            <a class="feat-card-link" href="/?nav=signup">Learn more →</a>
           </div>
           <div class="feat-card">
-            <div class="feat-icon">✉️</div>
-            <div class="feat-title">AI Email Generator</div>
-            <div class="feat-desc">Generate personalized, high-conversion outreach emails in seconds tailored to the role and recruiter.</div>
+            <div class="feat-card-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+              </svg>
+            </div>
+            <div class="feat-card-title">Skill Roadmap</div>
+            <div class="feat-card-desc">Bridge the expertise gap with structured learning goals integrated directly into your daily routine.</div>
+            <a class="feat-card-link" href="/?nav=signup">Learn more →</a>
           </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- STATS -->
-    <div id="how-it-works" style="background:#f0f2f5;padding:48px 2rem;">
-      <div class="stats">
-        <div class="stats-inner">
-          <div><div class="stat-big">10k+</div><div class="stat-lbl">Active Users</div></div>
-          <div><div class="stat-big">500k+</div><div class="stat-lbl">Apps Tracked</div></div>
-          <div><div class="stat-big">25k+</div><div class="stat-lbl">Interviews</div></div>
-          <div><div class="stat-big">94%</div><div class="stat-lbl">Success Rate</div></div>
+    <section id="how-it-works" class="stats-section">
+      <div class="stats-inner">
+        <div class="stats-title">Empowering growth for thousands</div>
+        <div class="stats-sub">Our users are landing roles at the world's most innovative companies.</div>
+        <div class="stats-grid">
+          <div class="stat-cell"><div class="stat-num">12k+</div><div class="stat-lbl">Active Professionals</div></div>
+          <div class="stat-cell"><div class="stat-num">4.5k</div><div class="stat-lbl">Jobs Landed</div></div>
+          <div class="stat-cell"><div class="stat-num">94%</div><div class="stat-lbl">Success Rate</div></div>
+          <div class="stat-cell" style="border-right:none;"><div class="stat-num">80k+</div><div class="stat-lbl">Skill Progress</div></div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- CTA -->
-    <div id="pricing" class="cta-wrap">
-      <div class="cta">
-        <h2>Ready to land your dream role?</h2>
-        <p>Stop manually updating spreadsheets. Let CareerSync handle the tracking while you focus on the interview.</p>
-        <div class="cta-btns">
-          <a class="btn-cta-p" href="/?nav=signup">Get Started for Free</a>
-          <a class="btn-cta-s" href="/?nav=login">View Demo</a>
+    <section id="pricing" class="cta-section">
+      <div class="cta-blob"></div>
+      <div class="cta-inner">
+        <div class="cta">
+          <h2>Ready to take the next step in your career?</h2>
+          <p>Join CareerSync today and start organizing your professional journey with purpose and clarity.</p>
+          <div class="cta-btns">
+            <a class="btn-cta-p" href="/?nav=signup">Get Started for Free</a>
+            <a class="btn-cta-s" href="/?nav=login">Schedule a Demo →</a>
+          </div>
         </div>
       </div>
-    </div>
+    </section>
 
     <!-- FOOTER -->
-    <div class="footer">
-      <div class="footer-grid">
-        <div>
-          <div class="f-logo">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+    <footer class="footer">
+      <div class="footer-inner">
+        <span class="footer-copy">© 2026 CareerSync Inc. All rights reserved. Made for professional excellence.</span>
+        <div class="footer-icons">
+          <a class="footer-icon" href="#" title="Twitter">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M13.682 10.622 20.239 3h-1.554l-5.693 6.618L8.445 3H3.203l6.875 10.007L3.203 21h1.554l6.012-6.989L15.368 21h5.242l-6.928-10.378Zm-2.129 2.474-.697-.996-5.543-7.924h2.387l4.474 6.397.697.996 5.815 8.312h-2.387l-4.746-6.785Z"/>
             </svg>
-            CareerSync
-          </div>
-          <div class="f-desc">The modern operating system for your professional career growth and job hunt.</div>
-        </div>
-        <div>
-          <div class="f-col-title">Product</div>
-          <div class="f-links">
-            <a class="f-link" href="#features">Features</a>
-            <a class="f-link" href="#pricing">Pricing</a>
-            <a class="f-link" href="#">Integrations</a>
-            <a class="f-link" href="#">Updates</a>
-          </div>
-        </div>
-        <div>
-          <div class="f-col-title">Resources</div>
-          <div class="f-links">
-            <a class="f-link" href="#">Blog</a>
-            <a class="f-link" href="#">Help Center</a>
-            <a class="f-link" href="#">Job Search Tips</a>
-            <a class="f-link" href="#">Resume Guide</a>
-          </div>
-        </div>
-        <div>
-          <div class="f-col-title">Legal</div>
-          <div class="f-links">
-            <a class="f-link" href="#">Privacy</a>
-            <a class="f-link" href="#">Terms</a>
-            <a class="f-link" href="#">Security</a>
-          </div>
+          </a>
+          <a class="footer-icon" href="#" title="GitHub">
+            <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24">
+              <path clip-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" fill-rule="evenodd"/>
+            </svg>
+          </a>
         </div>
       </div>
-      <div class="f-bottom">
-        <span class="f-copy">© 2026 CareerSync Inc. All rights reserved.</span>
-        <div style="display:flex;gap:16px;">
-          <a class="f-link" href="#">Cookies</a>
-          <a class="f-link" href="#">Accessibility</a>
-        </div>
-      </div>
-    </div>
+    </footer>
     """, unsafe_allow_html=True)
 
 
@@ -508,31 +457,38 @@ if st.session_state.auth_view == "landing":
 elif st.session_state.auth_view == "login":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f0f2f5!important;}
-    .block-container{padding:2rem 1rem!important;max-width:420px!important;margin:0 auto!important;}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
+      background:#f8fafc!important;font-family:'Inter',sans-serif!important;}
+    .block-container{padding:2rem 1rem!important;max-width:400px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;font-size:0.875rem!important;}
+      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;
+      font-size:0.875rem!important;font-family:'Inter',sans-serif!important;}
     div[data-testid="stTextInput"] input:focus{border-color:#2563EB!important;
       box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{font-size:0.85rem!important;font-weight:500!important;color:#374151!important;}
+    div[data-testid="stTextInput"] label{font-size:0.82rem!important;font-weight:500!important;color:#374151!important;}
     div[data-testid="stFormSubmitButton"] button{width:100%!important;border-radius:8px!important;
       background:#2563EB!important;padding:11px!important;font-size:0.875rem!important;
-      font-weight:700!important;color:#fff!important;border:none!important;}
+      font-weight:700!important;color:#fff!important;border:none!important;
+      font-family:'Inter',sans-serif!important;}
     div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
     div.stButton>button{background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.85rem!important;font-weight:600!important;box-shadow:none!important;}
+      padding:4px!important;font-size:0.82rem!important;font-weight:600!important;
+      box-shadow:none!important;font-family:'Inter',sans-serif!important;}
     </style>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center;padding:48px 0 28px;">
-      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:22px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-        </svg>
-        <span style="font-size:1.1rem;font-weight:700;color:#0f172a;">CareerSync</span>
+    <div style="text-align:center;padding:52px 0 28px;">
+      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:24px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:#2563EB;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+        </div>
+        <span style="font-size:1.05rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;">CareerSync</span>
       </div>
-      <h2 style="font-size:1.25rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Welcome back</h2>
-      <p style="font-size:0.85rem;color:#64748b;">Enter your details to sign in</p>
+      <h2 style="font-size:1.2rem;font-weight:700;color:#0f172a;margin-bottom:5px;font-family:'Inter',sans-serif;letter-spacing:-0.3px;">Welcome back</h2>
+      <p style="font-size:0.82rem;color:#64748b;font-family:'Inter',sans-serif;">Enter your details to sign in</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -554,7 +510,7 @@ elif st.session_state.auth_view == "login":
             else:
                 st.error("❌ Invalid email or password.")
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
     _, bc, _ = st.columns([1, 2, 1])
     with bc:
         if st.button("Don't have an account? Sign up →", key="go_reg", use_container_width=True):
@@ -569,31 +525,38 @@ elif st.session_state.auth_view == "login":
 elif st.session_state.auth_view == "register":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f0f2f5!important;}
-    .block-container{padding:2rem 1rem!important;max-width:480px!important;margin:0 auto!important;}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
+      background:#f8fafc!important;font-family:'Inter',sans-serif!important;}
+    .block-container{padding:2rem 1rem!important;max-width:460px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;font-size:0.875rem!important;}
+      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;
+      font-size:0.875rem!important;font-family:'Inter',sans-serif!important;}
     div[data-testid="stTextInput"] input:focus{border-color:#2563EB!important;
       box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{font-size:0.85rem!important;font-weight:500!important;color:#374151!important;}
+    div[data-testid="stTextInput"] label{font-size:0.82rem!important;font-weight:500!important;color:#374151!important;}
     div[data-testid="stFormSubmitButton"] button{width:100%!important;border-radius:8px!important;
       background:#2563EB!important;padding:11px!important;font-size:0.875rem!important;
-      font-weight:700!important;color:#fff!important;border:none!important;}
+      font-weight:700!important;color:#fff!important;border:none!important;
+      font-family:'Inter',sans-serif!important;}
     div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
     div.stButton>button{background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.85rem!important;font-weight:600!important;box-shadow:none!important;}
+      padding:4px!important;font-size:0.82rem!important;font-weight:600!important;
+      box-shadow:none!important;font-family:'Inter',sans-serif!important;}
     </style>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center;padding:36px 0 22px;">
-      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:20px;">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-        </svg>
-        <span style="font-size:1.1rem;font-weight:700;color:#0f172a;">CareerSync</span>
+    <div style="text-align:center;padding:40px 0 24px;">
+      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:22px;">
+        <div style="width:32px;height:32px;border-radius:8px;background:#2563EB;display:flex;align-items:center;justify-content:center;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+          </svg>
+        </div>
+        <span style="font-size:1.05rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;">CareerSync</span>
       </div>
-      <h2 style="font-size:1.25rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Create your account</h2>
-      <p style="font-size:0.85rem;color:#64748b;">Your own private dashboard synced to Gmail</p>
+      <h2 style="font-size:1.2rem;font-weight:700;color:#0f172a;margin-bottom:5px;font-family:'Inter',sans-serif;letter-spacing:-0.3px;">Create your account</h2>
+      <p style="font-size:0.82rem;color:#64748b;font-family:'Inter',sans-serif;">Your private dashboard synced to Gmail</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -604,8 +567,8 @@ elif st.session_state.auth_view == "register":
         r_pw2 = st.text_input("Confirm password", placeholder="Repeat password",  type="password")
         st.markdown("""
         <div style="margin:12px 0 6px;padding-top:12px;border-top:1px solid #f1f5f9;">
-          <p style="font-size:0.75rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">📬 Gmail Sync</p>
-          <p style="font-size:0.75rem;color:#94a3b8;margin:0 0 6px;">
+          <p style="font-size:0.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;font-family:'Inter',sans-serif;">📬 Gmail Sync</p>
+          <p style="font-size:0.72rem;color:#94a3b8;margin:0 0 6px;font-family:'Inter',sans-serif;">
             <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#2563EB;font-weight:600;">Get App Password →</a>
             App: Mail · Device: Other · Name: CareerSync
           </p>
@@ -632,7 +595,7 @@ elif st.session_state.auth_view == "register":
             else:
                 st.error(f"❌ {msg}")
 
-    st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
     _, bc2, _ = st.columns([1, 2, 1])
     with bc2:
         if st.button("Already have an account? Sign in →", key="go_login", use_container_width=True):
@@ -640,6 +603,6 @@ elif st.session_state.auth_view == "register":
     if st.button("← Back to home", key="back_home_r"):
         go("landing"); st.rerun()
     st.markdown("""
-    <div style="text-align:center;padding:16px 0;font-size:0.72rem;color:#94a3b8;">
+    <div style="text-align:center;padding:16px 0;font-size:0.7rem;color:#94a3b8;font-family:'Inter',sans-serif;">
       © 2026 CareerSync Inc. All rights reserved.</div>
     """, unsafe_allow_html=True)
