@@ -39,23 +39,22 @@ def _restore():
     return False
 
 def _logout():
-    """
-    Full logout:
-    1. Set logged_out flag so restore doesn't re-login
-    2. Clear session
-    3. Clear ALL query params (removes ?uid= from URL)
-    4. Switch to home — URL will be clean with no params
-    """
     st.session_state["logged_out"] = True
     for k in ["user", "user_id"]:
         st.session_state.pop(k, None)
     st.query_params.clear()
-    st.switch_page("app.py")
+    st.markdown(
+        '<meta http-equiv="refresh" content="0; url=/">',
+        unsafe_allow_html=True
+    )
+    st.stop()
 
 if not _restore():
-    # Not logged in and no uid in URL — go to home
     st.query_params.clear()
-    st.switch_page("app.py")
+    st.markdown(
+        '<meta http-equiv="refresh" content="0; url=/">',
+        unsafe_allow_html=True
+    )
     st.stop()
 
 user = st.session_state["user"]
