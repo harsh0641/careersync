@@ -1,13 +1,14 @@
 """
 app.py — CareerSync Landing + Login + Register
+Landing page matches exact HTML UI design reference.
 Persistent login via st.query_params ?uid=
-Logout clears uid from URL completely.
 """
 
 import os, sys
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "src"))
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 st.set_page_config(
     page_title="CareerSync — Automated Job Tracker",
@@ -22,10 +23,8 @@ from auth import register_user, login_user, supabase_ready, get_user_by_id
 # PERSISTENT LOGIN
 # ══════════════════════════════════════════════════════════════════════════════
 def _restore_session():
-    """Restore user from ?uid= only if not explicitly logged out."""
     if st.session_state.get("user"):
         return True
-    # If user just logged out, do NOT restore
     if st.session_state.get("logged_out"):
         return False
     uid = st.query_params.get("uid", "")
@@ -38,24 +37,13 @@ def _restore_session():
     return False
 
 def _set_login(user: dict):
-    """Save user to session + URL."""
     st.session_state.pop("logged_out", None)
     st.session_state["user"]    = user
     st.session_state["user_id"] = user["id"]
     st.query_params["uid"]      = user["id"]
 
-def _clear_login():
-    """Clear session and URL completely."""
-    st.session_state["logged_out"] = True
-    for k in ["user", "user_id"]:
-        st.session_state.pop(k, None)
-    # Clear ALL query params so ?uid= is gone
-    st.query_params.clear()
-
-# Restore on every load
 _restore_session()
 
-# Redirect if already logged in
 if st.session_state.get("user"):
     st.switch_page("pages/1_Dashboard.py")
     st.stop()
@@ -66,131 +54,336 @@ if "auth_view" not in st.session_state:
 # ── Hide Streamlit chrome ──────────────────────────────────────────────────────
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 #MainMenu,header,footer,[data-testid="stToolbar"],[data-testid="stDecoration"],
 [data-testid="stStatusWidget"],[data-testid="stSidebar"],
 [data-testid="collapsedControl"],[data-testid="stHeader"]{display:none!important;}
-html,body,.stApp,[data-testid="stAppViewContainer"],
-section.main,[data-testid="stMain"]{
-  background:#f6f6f8!important;
-  font-family:'DM Sans',sans-serif!important;
-}
 .block-container{padding:0!important;max-width:100%!important;}
+body,.stApp,[data-testid="stAppViewContainer"],
+section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
 </style>
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LANDING PAGE
+# LANDING PAGE — exact HTML design
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.auth_view == "landing":
 
+    LANDING_HTML = """<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>CareerSync</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script>
+tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      colors: {"primary": "#2563EB", "background-light": "#f6f6f8"},
+      fontFamily: {"display": ["DM Sans", "sans-serif"]},
+      borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+    },
+  },
+}
+</script>
+<style>body { font-family: 'DM Sans', sans-serif; }</style>
+</head>
+<body class="bg-background-light text-slate-900">
+
+<!-- Top Navigation -->
+<header class="sticky top-0 z-50 w-full border-b border-slate-200 bg-background-light/80 backdrop-blur-md">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="flex h-16 items-center justify-between">
+  <div class="flex items-center gap-2">
+    <div class="text-primary flex items-center justify-center">
+      <span class="material-symbols-outlined text-3xl">sync_alt</span>
+    </div>
+    <span class="text-xl font-bold tracking-tight text-slate-900">CareerSync</span>
+  </div>
+  <nav class="hidden md:flex items-center gap-8">
+    <a class="text-sm font-medium text-slate-600 hover:text-primary transition-colors" href="#features">Features</a>
+    <a class="text-sm font-medium text-slate-600 hover:text-primary transition-colors" href="#how-it-works">How it Works</a>
+    <a class="text-sm font-medium text-slate-600 hover:text-primary transition-colors" href="#pricing">Pricing</a>
+    <a class="text-sm font-medium text-slate-600 hover:text-primary transition-colors cursor-pointer" id="nav-login">Log In</a>
+    <button id="nav-signup" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold transition-all shadow-sm">
+      Get Started Free
+    </button>
+  </nav>
+  <div class="md:hidden flex gap-3">
+    <button id="mob-login" class="text-sm font-semibold text-primary border border-primary px-4 py-2 rounded-lg">Log In</button>
+    <button id="mob-signup" class="bg-primary text-white text-sm font-bold px-4 py-2 rounded-lg">Sign Up</button>
+  </div>
+</div>
+</div>
+</header>
+
+<main>
+<!-- Hero Section -->
+<section class="relative pt-16 pb-20 lg:pt-24 lg:pb-32 overflow-hidden">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="grid lg:grid-cols-2 gap-12 items-center">
+  <div class="flex flex-col gap-8">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 w-fit">
+      <span class="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+      <span class="text-xs font-bold text-primary tracking-wide uppercase">AI-Powered Job Hunting</span>
+    </div>
+    <h1 class="text-4xl lg:text-6xl font-bold leading-[1.1] text-slate-900 tracking-tight">
+      Automated Job Application <span class="text-primary">Tracker</span> &amp; Recruiter Research
+    </h1>
+    <p class="text-lg text-slate-600 leading-relaxed max-w-xl">
+      Streamline your job search with CareerSync. Automatically track applications, research recruiters, and generate AI-powered outreach emails in one professional dashboard.
+    </p>
+    <div class="flex flex-col sm:flex-row gap-4">
+      <label class="flex-1 max-w-md">
+        <div class="relative flex items-center group">
+          <div class="absolute left-4 text-slate-400 group-focus-within:text-primary transition-colors">
+            <span class="material-symbols-outlined">mail</span>
+          </div>
+          <input class="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none" placeholder="Enter your work email" type="email" id="hero-email"/>
+        </div>
+      </label>
+      <button id="btn-start" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/20">
+        Start Tracking
+      </button>
+    </div>
+    <div class="flex items-center gap-4 text-sm text-slate-500">
+      <div class="flex -space-x-2">
+        <div class="h-8 w-8 rounded-full border-2 border-white bg-indigo-400 flex items-center justify-center text-white text-xs font-bold">JK</div>
+        <div class="h-8 w-8 rounded-full border-2 border-white bg-sky-400 flex items-center justify-center text-white text-xs font-bold">AM</div>
+        <div class="h-8 w-8 rounded-full border-2 border-white bg-amber-400 flex items-center justify-center text-white text-xs font-bold">SR</div>
+      </div>
+      <span>Joined by 10k+ active job seekers</span>
+    </div>
+  </div>
+  <div class="relative">
+    <div class="absolute inset-0 bg-primary/20 blur-[120px] rounded-full pointer-events-none"></div>
+    <div class="relative rounded-2xl border border-slate-200 bg-white p-2 shadow-2xl">
+      <div class="rounded-xl bg-slate-50 border border-slate-100 p-4">
+        <div class="bg-white rounded-lg px-4 py-3 flex items-center justify-between mb-3 shadow-sm">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-xl">sync_alt</span>
+            <span class="font-bold text-slate-900 text-sm">CareerSync</span>
+          </div>
+          <span class="bg-primary text-white text-xs font-bold px-3 py-1.5 rounded-lg">Sync Gmail</span>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <div class="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+            <div class="text-2xl font-bold text-slate-900">24</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide mt-0.5">Applications</div>
+          </div>
+          <div class="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+            <div class="text-2xl font-bold text-slate-900">6</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide mt-0.5">Interviews</div>
+          </div>
+          <div class="bg-white rounded-xl p-3 border border-slate-100 shadow-sm">
+            <div class="text-2xl font-bold text-slate-900">18</div>
+            <div class="text-xs text-slate-500 font-semibold uppercase tracking-wide mt-0.5">Recruiters</div>
+          </div>
+        </div>
+        <div class="flex flex-col gap-2">
+          <div class="bg-white rounded-xl px-3 py-2.5 border border-slate-100 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">G</div>
+              <div>
+                <div class="text-sm font-semibold">Google</div>
+                <div class="text-xs text-slate-400">Software Engineer</div>
+              </div>
+            </div>
+            <span class="text-xs font-bold px-2 py-1 rounded-full bg-amber-100 text-amber-700">Interview</span>
+          </div>
+          <div class="bg-white rounded-xl px-3 py-2.5 border border-slate-100 flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-slate-100 flex items-center justify-center text-xs font-bold text-slate-500">S</div>
+              <div>
+                <div class="text-sm font-semibold">Stripe</div>
+                <div class="text-xs text-slate-400">Full Stack Engineer</div>
+              </div>
+            </div>
+            <span class="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">Offer</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</section>
+
+<!-- Social Proof -->
+<section class="py-12 border-y border-slate-200 bg-slate-50/50">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <p class="text-center text-sm font-semibold text-slate-400 uppercase tracking-widest mb-8">Trusted by candidates hired at</p>
+  <div class="flex flex-wrap justify-center gap-8 md:gap-16 opacity-50 grayscale">
+    <div class="h-8 w-24 bg-slate-400 rounded"></div>
+    <div class="h-8 w-24 bg-slate-400 rounded"></div>
+    <div class="h-8 w-24 bg-slate-400 rounded"></div>
+    <div class="h-8 w-24 bg-slate-400 rounded"></div>
+    <div class="h-8 w-24 bg-slate-400 rounded"></div>
+  </div>
+</div>
+</section>
+
+<!-- Features Grid -->
+<section class="py-20 lg:py-32" id="features">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="text-center max-w-3xl mx-auto mb-16 flex flex-col gap-4">
+    <h2 class="text-3xl lg:text-4xl font-bold tracking-tight text-slate-900">Powerful Features for Modern Job Seekers</h2>
+    <p class="text-slate-600 text-lg">Everything you need to land your next role faster, without the manual spreadsheet maintenance.</p>
+  </div>
+  <div class="grid md:grid-cols-3 gap-8">
+    <div class="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 transition-all shadow-sm hover:shadow-xl hover:shadow-primary/5">
+      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined">sync_disabled</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900 mb-3">Gmail Sync</h3>
+      <p class="text-slate-600 leading-relaxed">Automatically pull job applications directly from your inbox. No manual entry, no missed opportunities.</p>
+    </div>
+    <div class="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 transition-all shadow-sm hover:shadow-xl hover:shadow-primary/5">
+      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined">psychology</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900 mb-3">AI Enrichment</h3>
+      <p class="text-slate-600 leading-relaxed">Get deep insights on companies and recruiters. Know their recent funding, news, and interview style.</p>
+    </div>
+    <div class="group p-8 rounded-2xl border border-slate-200 bg-white hover:border-primary/50 transition-all shadow-sm hover:shadow-xl hover:shadow-primary/5">
+      <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6 group-hover:scale-110 transition-transform">
+        <span class="material-symbols-outlined">magic_button</span>
+      </div>
+      <h3 class="text-xl font-bold text-slate-900 mb-3">AI Email Generator</h3>
+      <p class="text-slate-600 leading-relaxed">Generate personalized, high-conversion outreach emails in seconds tailored to the role and recruiter.</p>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- Stats -->
+<section class="py-20 bg-slate-900 text-white rounded-[2rem] mx-4 sm:mx-8 mb-20" id="how-it-works">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+    <div class="flex flex-col gap-2"><span class="text-4xl lg:text-5xl font-bold">10k+</span><span class="text-slate-400 text-sm font-medium uppercase tracking-widest">Active Users</span></div>
+    <div class="flex flex-col gap-2"><span class="text-4xl lg:text-5xl font-bold">500k+</span><span class="text-slate-400 text-sm font-medium uppercase tracking-widest">Apps Tracked</span></div>
+    <div class="flex flex-col gap-2"><span class="text-4xl lg:text-5xl font-bold">25k+</span><span class="text-slate-400 text-sm font-medium uppercase tracking-widest">Interviews</span></div>
+    <div class="flex flex-col gap-2"><span class="text-4xl lg:text-5xl font-bold">94%</span><span class="text-slate-400 text-sm font-medium uppercase tracking-widest">Success Rate</span></div>
+  </div>
+</div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-20 lg:py-32 bg-primary/5" id="pricing">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+  <h2 class="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">Ready to land your dream role?</h2>
+  <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
+    Stop manually updating spreadsheets. Let CareerSync handle the tracking while you focus on the interview.
+  </p>
+  <div class="flex flex-col sm:flex-row justify-center gap-4">
+    <button id="btn-getstarted" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/25">
+      Get Started for Free
+    </button>
+    <button id="btn-demo" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg border border-slate-200 hover:bg-slate-50 transition-all">
+      View Demo
+    </button>
+  </div>
+</div>
+</section>
+</main>
+
+<!-- Footer -->
+<footer class="bg-white border-t border-slate-200 pt-16 pb-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-16">
+    <div class="col-span-2 flex flex-col gap-6">
+      <div class="flex items-center gap-2">
+        <div class="text-primary"><span class="material-symbols-outlined text-3xl">sync_alt</span></div>
+        <span class="text-xl font-bold tracking-tight text-slate-900">CareerSync</span>
+      </div>
+      <p class="text-slate-500 max-w-xs leading-relaxed">The modern operating system for your professional career growth and job hunt.</p>
+      <div class="flex gap-4">
+        <a class="text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">public</span></a>
+        <a class="text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">group</span></a>
+        <a class="text-slate-400 hover:text-primary transition-colors" href="#"><span class="material-symbols-outlined">alternate_email</span></a>
+      </div>
+    </div>
+    <div>
+      <h4 class="font-bold text-slate-900 mb-6">Product</h4>
+      <ul class="flex flex-col gap-4 text-slate-500 text-sm">
+        <li><a class="hover:text-primary transition-colors" href="#">Features</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Integrations</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Updates</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold text-slate-900 mb-6">Resources</h4>
+      <ul class="flex flex-col gap-4 text-slate-500 text-sm">
+        <li><a class="hover:text-primary transition-colors" href="#">Blog</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Help Center</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Job Search Tips</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Resume Guide</a></li>
+      </ul>
+    </div>
+    <div>
+      <h4 class="font-bold text-slate-900 mb-6">Legal</h4>
+      <ul class="flex flex-col gap-4 text-slate-500 text-sm">
+        <li><a class="hover:text-primary transition-colors" href="#">Privacy</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Terms</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#">Security</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="pt-8 border-t border-slate-200 flex flex-col md:flex-row justify-between gap-4 text-sm text-slate-500">
+    <p>© 2026 CareerSync Inc. All rights reserved.</p>
+    <div class="flex gap-6">
+      <a class="hover:text-slate-900 transition-colors" href="#">Cookies</a>
+      <a class="hover:text-slate-900 transition-colors" href="#">Accessibility</a>
+    </div>
+  </div>
+</div>
+</footer>
+
+<script>
+function goLogin()  { window.parent.postMessage({cs_action:"login"},  "*"); }
+function goSignup() { window.parent.postMessage({cs_action:"signup"}, "*"); }
+
+document.getElementById("nav-login")?.addEventListener("click",    function(e){e.preventDefault();goLogin();});
+document.getElementById("nav-signup")?.addEventListener("click",   goSignup);
+document.getElementById("mob-login")?.addEventListener("click",    goLogin);
+document.getElementById("mob-signup")?.addEventListener("click",   goSignup);
+document.getElementById("btn-start")?.addEventListener("click",    goSignup);
+document.getElementById("btn-getstarted")?.addEventListener("click",goSignup);
+document.getElementById("btn-demo")?.addEventListener("click",     goLogin);
+</script>
+</body></html>"""
+
+    # Render the full HTML landing page
+    components.html(LANDING_HTML, height=3400, scrolling=True)
+
+    # Listen for postMessage from iframe buttons
+    # Also provide Streamlit fallback buttons below (hidden visually but functional)
     st.markdown("""
     <style>
-    .cs-nav{background:rgba(246,246,248,0.95);backdrop-filter:blur(12px);
-      border-bottom:1px solid #e2e8f0;padding:0 2rem;height:64px;
-      display:flex;align-items:center;justify-content:space-between;}
-    .cs-nav-logo{display:flex;align-items:center;gap:8px;font-size:1.2rem;font-weight:700;color:#0f172a;}
-    .hero-section{max-width:860px;margin:0 auto;padding:64px 2rem 40px;text-align:center;}
-    .hero-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;
-      border-radius:9999px;background:rgba(37,99,235,0.08);border:1px solid rgba(37,99,235,0.2);
-      font-size:0.72rem;font-weight:700;color:#2563EB;text-transform:uppercase;
-      letter-spacing:0.8px;margin-bottom:24px;}
-    .hero-dot{width:6px;height:6px;border-radius:50%;background:#2563EB;
-      display:inline-block;animation:pulse 2s infinite;}
-    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-    .hero-title{font-size:clamp(2rem,5vw,3.2rem);font-weight:700;color:#0f172a;
-      line-height:1.1;letter-spacing:-1px;margin-bottom:20px;}
-    .hero-title span{color:#2563EB;}
-    .hero-sub{font-size:1.05rem;color:#64748b;max-width:580px;margin:0 auto 40px;line-height:1.7;}
-    .stats-bar{display:flex;justify-content:center;gap:40px;flex-wrap:wrap;
-      padding:28px;background:#fff;border-radius:16px;border:1px solid #e2e8f0;
-      max-width:680px;margin:24px auto 48px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.04);}
-    .stat-item{text-align:center;}
-    .stat-num-big{font-size:1.8rem;font-weight:700;color:#0f172a;line-height:1;}
-    .stat-label-sm{font-size:0.7rem;color:#64748b;font-weight:600;text-transform:uppercase;
-      letter-spacing:0.7px;margin-top:4px;}
-    .features-section{max-width:960px;margin:0 auto;padding:0 2rem 48px;}
-    .features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;}
-    .feature-card{background:#fff;border:1px solid #e2e8f0;border-radius:14px;
-      padding:24px;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-    .feature-icon{font-size:1.5rem;margin-bottom:12px;}
-    .feature-title{font-size:0.95rem;font-weight:700;color:#0f172a;margin-bottom:6px;}
-    .feature-desc{font-size:0.85rem;color:#64748b;line-height:1.6;}
-    div.stButton>button{border-radius:10px!important;font-weight:700!important;
-      font-family:'DM Sans',sans-serif!important;transition:all 0.2s!important;}
+    .landing-btns{display:flex;gap:12px;justify-content:center;padding:16px 0 8px;background:#f6f6f8;}
+    div[data-testid="column"] div.stButton>button{
+      border-radius:10px!important;font-weight:700!important;
+      font-family:'DM Sans',sans-serif!important;
+      font-size:0.95rem!important;padding:12px 28px!important;}
+    div[data-testid="column"]:nth-child(1) div.stButton>button{
+      background:#2563EB!important;color:#fff!important;border:none!important;
+      box-shadow:0 4px 14px rgba(37,99,235,.3)!important;}
+    div[data-testid="column"]:nth-child(2) div.stButton>button{
+      background:#fff!important;color:#0f172a!important;
+      border:1.5px solid #e2e8f0!important;}
     </style>
-    """, unsafe_allow_html=True)
-
-    # Nav
-    st.markdown('<div class="cs-nav"><div class="cs-nav-logo">⇄ CareerSync</div></div>',
-                unsafe_allow_html=True)
-    _, nl, ns = st.columns([6, 1, 1])
-    with nl:
-        if st.button("Log In", key="nav_login", use_container_width=True):
-            st.session_state.auth_view = "login"; st.rerun()
-    with ns:
-        if st.button("Sign Up", key="nav_signup", use_container_width=True, type="primary"):
-            st.session_state.auth_view = "register"; st.rerun()
-
-    # Hero
-    st.markdown("""
-    <div class="hero-section">
-      <div class="hero-badge"><span class="hero-dot"></span> AI-Powered Job Hunting</div>
-      <div class="hero-title">Automated Job Application<br><span>Tracker</span> &amp; Recruiter Research</div>
-      <div class="hero-sub">Automatically track applications, research recruiters, and generate AI-powered outreach emails in one professional dashboard.</div>
-    </div>
     """, unsafe_allow_html=True)
 
     _, c1, c2, _ = st.columns([2, 1.5, 1.5, 2])
     with c1:
-        if st.button("🚀 Start Tracking Free", key="hero_signup", use_container_width=True, type="primary"):
+        if st.button("🚀 Get Started Free", key="land_signup", use_container_width=True):
             st.session_state.auth_view = "register"; st.rerun()
     with c2:
-        if st.button("Sign In", key="hero_login", use_container_width=True):
+        if st.button("Log In", key="land_login", use_container_width=True):
             st.session_state.auth_view = "login"; st.rerun()
-
-    st.markdown("""
-    <div class="stats-bar">
-      <div class="stat-item"><div class="stat-num-big">10k+</div><div class="stat-label-sm">Active Users</div></div>
-      <div class="stat-item"><div class="stat-num-big">500k+</div><div class="stat-label-sm">Apps Tracked</div></div>
-      <div class="stat-item"><div class="stat-num-big">25k+</div><div class="stat-label-sm">Interviews</div></div>
-      <div class="stat-item"><div class="stat-num-big">94%</div><div class="stat-label-sm">Success Rate</div></div>
-    </div>
-    <div class="features-section">
-      <div style="text-align:center;font-size:1.6rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Powerful Features</div>
-      <div style="text-align:center;color:#64748b;margin-bottom:28px;">Everything you need to land your next role faster.</div>
-      <div class="features-grid">
-        <div class="feature-card"><div class="feature-icon">📬</div>
-          <div class="feature-title">Gmail Sync</div>
-          <div class="feature-desc">Automatically pull job applications from your inbox. No manual entry.</div></div>
-        <div class="feature-card"><div class="feature-icon">🧠</div>
-          <div class="feature-title">AI Enrichment</div>
-          <div class="feature-desc">Find recruiters across 7 sources — LinkedIn, Hunter, Apollo and more.</div></div>
-        <div class="feature-card"><div class="feature-icon">✉️</div>
-          <div class="feature-title">AI Cold Emails</div>
-          <div class="feature-desc">Generate personalized outreach emails to recruiters in seconds.</div></div>
-      </div>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-    <div style="text-align:center;padding:40px 2rem;background:#0f172a;
-                border-radius:20px;margin:0 2rem 40px;">
-      <div style="font-size:1.8rem;font-weight:700;color:#fff;margin-bottom:10px;">Ready to land your dream role?</div>
-      <div style="font-size:0.95rem;color:#94a3b8;margin-bottom:28px;">Stop manually updating spreadsheets. Let CareerSync handle it.</div>
-    </div>
-    """, unsafe_allow_html=True)
-    _, b1, b2, _ = st.columns([2, 1.5, 1.5, 2])
-    with b1:
-        if st.button("Get Started Free", key="bottom_signup", use_container_width=True, type="primary"):
-            st.session_state.auth_view = "register"; st.rerun()
-    with b2:
-        if st.button("Sign In →", key="bottom_login", use_container_width=True):
-            st.session_state.auth_view = "login"; st.rerun()
-
-    st.markdown("""<div style="text-align:center;padding:20px 0 32px;font-size:0.75rem;color:#94a3b8;">
-      © 2026 CareerSync Inc. All rights reserved. · 🔒 Private cloud database
-    </div>""", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -199,7 +392,9 @@ if st.session_state.auth_view == "landing":
 elif st.session_state.auth_view == "login":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
+      background:#f6f6f8!important;font-family:'DM Sans',sans-serif!important;}
     .block-container{padding:2rem 1rem!important;max-width:460px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1px solid #cbd5e1!important;
       background:#fff!important;padding:12px 16px!important;color:#0f172a!important;font-size:0.875rem!important;}
@@ -222,7 +417,7 @@ elif st.session_state.auth_view == "login":
         <span style="font-size:1.5rem;font-weight:700;color:#0f172a;">CareerSync</span>
       </div>
       <h2 style="font-size:1.4rem;font-weight:700;color:#0f172a;margin:20px 0 6px;">Welcome back</h2>
-      <p style="font-size:0.875rem;color:#64748b;margin:0;">Enter your details to sign in</p>
+      <p style="font-size:0.875rem;color:#64748b;margin:0;">Please enter your details to sign in</p>
     </div>
     """, unsafe_allow_html=True)
 
@@ -259,7 +454,9 @@ elif st.session_state.auth_view == "login":
 elif st.session_state.auth_view == "register":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
+      background:#f6f6f8!important;font-family:'DM Sans',sans-serif!important;}
     .block-container{padding:2rem 1rem!important;max-width:520px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1px solid #cbd5e1!important;
       background:#fff!important;padding:12px 16px!important;color:#0f172a!important;font-size:0.875rem!important;}
@@ -282,7 +479,7 @@ elif st.session_state.auth_view == "register":
         <span style="font-size:1.5rem;font-weight:700;color:#0f172a;">CareerSync</span>
       </div>
       <h2 style="font-size:1.4rem;font-weight:700;color:#0f172a;margin:16px 0 6px;">Create your account</h2>
-      <p style="font-size:0.875rem;color:#64748b;margin:0;">Each account has its own private dashboard</p>
+      <p style="font-size:0.875rem;color:#64748b;margin:0;">Each account has its own private dashboard synced to your Gmail</p>
     </div>
     """, unsafe_allow_html=True)
 
