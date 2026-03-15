@@ -1,6 +1,5 @@
 """
 app.py — CareerSync Landing + Login + Register
-Reads Supabase keys from Streamlit secrets.
 """
 
 import os, sys
@@ -17,6 +16,13 @@ st.set_page_config(
 )
 
 from auth import register_user, login_user, supabase_ready
+
+# ── Persist login across refresh ───────────────────────────────────────────────
+if "user_id" in st.session_state and "user" not in st.session_state:
+    from auth import get_user_by_id
+    user = get_user_by_id(st.session_state["user_id"])
+    if user:
+        st.session_state["user"] = user
 
 # ── Redirect if already logged in ─────────────────────────────────────────────
 if st.session_state.get("user"):
@@ -69,8 +75,7 @@ tailwind.config={darkMode:"class",theme:{extend:{
   </div>
   <nav class="hidden md:flex items-center gap-8">
     <a class="text-sm font-medium text-slate-600 hover:text-primary" href="#features">Features</a>
-    <a class="text-sm font-medium text-slate-600 hover:text-primary" href="#how-it-works">How it Works</a>
-    <a class="text-sm font-medium text-slate-600 hover:text-primary" href="#pricing">Pricing</a>
+    <a class="text-sm font-medium text-slate-600 hover:text-primary" href="#stats">Stats</a>
     <a class="text-sm font-medium text-slate-600 hover:text-primary" href="#" id="nav-login">Log In</a>
     <button id="nav-signup" class="bg-primary hover:bg-primary/90 text-white px-5 py-2.5 rounded-lg text-sm font-bold shadow-sm">Get Started Free</button>
   </nav>
@@ -165,7 +170,7 @@ tailwind.config={darkMode:"class",theme:{extend:{
 </div>
 </section>
 
-<section class="py-20 bg-slate-900 text-white rounded-[2rem] mx-4 sm:mx-8 mb-20">
+<section class="py-20 bg-slate-900 text-white rounded-[2rem] mx-4 sm:mx-8 mb-20" id="stats">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 <div class="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
   <div class="flex flex-col gap-2"><span class="text-4xl lg:text-5xl font-bold">10k+</span><span class="text-slate-400 text-sm font-medium uppercase tracking-widest">Active Users</span></div>
@@ -176,83 +181,58 @@ tailwind.config={darkMode:"class",theme:{extend:{
 </div>
 </section>
 
-<section class="py-20 lg:py-32 bg-primary/5">
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-  <h2 class="text-3xl lg:text-5xl font-bold text-slate-900 mb-6">Ready to land your dream role?</h2>
-  <p class="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">Stop manually updating spreadsheets. Let CareerSync handle the tracking.</p>
-  <div class="flex flex-col sm:flex-row justify-center gap-4">
-    <button id="btn-getstarted2" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg shadow-primary/25">Get Started for Free</button>
-    <button id="btn-login2" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg border border-slate-200 hover:bg-slate-50">Sign In</button>
-  </div>
-</div>
-</section>
-</main>
-
-<footer class="bg-white border-t border-slate-200 pt-16 pb-8">
+<footer class="bg-white border-t border-slate-200 pt-12 pb-8">
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-<div class="flex items-center gap-2 mb-6">
+<div class="flex items-center gap-2 mb-4">
   <div class="text-primary"><span class="material-symbols-outlined text-3xl">sync_alt</span></div>
   <span class="text-xl font-bold">CareerSync</span>
 </div>
 <p class="text-slate-500 text-sm">© 2026 CareerSync. All rights reserved.</p>
 </div>
 </footer>
+</main>
 
 <script>
 function goLogin()  { window.parent.postMessage({cs:"login"},  "*"); }
 function goSignup() { window.parent.postMessage({cs:"signup"}, "*"); }
-document.getElementById("nav-login")?.addEventListener("click",       function(e){e.preventDefault();goLogin();});
-document.getElementById("nav-signup")?.addEventListener("click",      goSignup);
-document.getElementById("mob-login")?.addEventListener("click",       goLogin);
-document.getElementById("mob-signup")?.addEventListener("click",      goSignup);
-document.getElementById("btn-start")?.addEventListener("click",       goSignup);
-document.getElementById("btn-login")?.addEventListener("click",       goLogin);
-document.getElementById("btn-getstarted2")?.addEventListener("click", goSignup);
-document.getElementById("btn-login2")?.addEventListener("click",      goLogin);
+document.getElementById("nav-login")?.addEventListener("click",  function(e){e.preventDefault();goLogin();});
+document.getElementById("nav-signup")?.addEventListener("click", goSignup);
+document.getElementById("mob-login")?.addEventListener("click",  goLogin);
+document.getElementById("mob-signup")?.addEventListener("click", goSignup);
+document.getElementById("btn-start")?.addEventListener("click",  goSignup);
+document.getElementById("btn-login")?.addEventListener("click",  goLogin);
 </script>
 </body></html>"""
 
-    components.html(LANDING, height=3000, scrolling=True)
+    components.html(LANDING, height=2800, scrolling=True)
 
-    # Listen for postMessage from iframe
+    # Handle postMessage routing via query params
     msg = st.query_params.get("cs", "")
     if msg == "login":
         st.session_state.auth_view = "login"; st.rerun()
     elif msg == "signup":
         st.session_state.auth_view = "register"; st.rerun()
 
+    # Small hidden Streamlit buttons as fallback (invisible — iframe buttons handle UX)
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
-    div[data-testid="column"]:nth-child(1) div.stButton>button{
-      background:#2563EB!important;color:#fff!important;border:none!important;
+    .fallback-btns{display:flex;gap:12px;justify-content:center;padding:16px 0 8px;}
+    .fallback-btns div.stButton>button{
       border-radius:12px!important;font-size:1rem!important;font-weight:700!important;
-      padding:14px 28px!important;font-family:'DM Sans',sans-serif!important;
-      box-shadow:0 4px 14px rgba(37,99,235,.28)!important;width:100%!important;}
+      padding:12px 32px!important;font-family:'DM Sans',sans-serif!important;}
+    div[data-testid="column"]:nth-child(1) div.stButton>button{
+      background:#2563EB!important;color:#fff!important;border:none!important;}
     div[data-testid="column"]:nth-child(2) div.stButton>button{
-      background:#fff!important;color:#0f172a!important;
-      border:1.5px solid #e2e8f0!important;border-radius:12px!important;
-      font-size:1rem!important;font-weight:700!important;padding:14px 28px!important;
-      font-family:'DM Sans',sans-serif!important;width:100%!important;}
+      background:#fff!important;color:#0f172a!important;border:1.5px solid #e2e8f0!important;}
     </style>""", unsafe_allow_html=True)
 
-    _, mid, _ = st.columns([1, 2, 1])
-    with mid:
-        st.markdown("""<div style="padding:32px 0 16px;text-align:center;font-family:'DM Sans',sans-serif;">
-          <p style="font-size:1.1rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Get started with CareerSync</p>
-          <p style="font-size:0.875rem;color:#64748b;margin-bottom:24px;">Sign in or create a free account to start tracking your applications.</p>
-        </div>""", unsafe_allow_html=True)
-        c1, c2 = st.columns(2)
-        with c1:
-            if st.button("Sign In", key="land_signin", use_container_width=True):
-                st.session_state.auth_view = "login"; st.rerun()
-        with c2:
-            if st.button("Create Free Account", key="land_signup", use_container_width=True):
-                st.session_state.auth_view = "register"; st.rerun()
-        st.markdown("""<p style="text-align:center;font-size:0.75rem;color:#94a3b8;
-                  font-family:'DM Sans',sans-serif;padding-bottom:32px;">
-          🔒 Cloud database · Share your link · Everyone gets their own private dashboard
-        </p>""", unsafe_allow_html=True)
+    _, c1, c2, _ = st.columns([1, 1, 1, 1])
+    with c1:
+        if st.button("Sign In", key="land_signin", use_container_width=True):
+            st.session_state.auth_view = "login"; st.rerun()
+    with c2:
+        if st.button("Create Free Account", key="land_signup", use_container_width=True):
+            st.session_state.auth_view = "register"; st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -306,7 +286,8 @@ elif st.session_state.auth_view == "login":
         else:
             user = login_user(email, password)
             if user:
-                st.session_state.user = user
+                st.session_state.user    = user
+                st.session_state.user_id = user["id"]
                 st.switch_page("pages/1_Dashboard.py")
             else:
                 st.error("❌ Invalid email or password.")
@@ -363,7 +344,6 @@ elif st.session_state.auth_view == "register":
         r_em   = st.text_input("Email address",    placeholder="name@company.com")
         r_pw   = st.text_input("Password",         placeholder="Create a password (min 6 chars)", type="password")
         r_pw2  = st.text_input("Confirm password", placeholder="Repeat your password",            type="password")
-
         st.markdown("""<div style="font-size:0.78rem;font-weight:700;color:#374151;
           text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;
           border-top:1px solid #f1f5f9;padding-top:16px;">
@@ -372,14 +352,12 @@ elif st.session_state.auth_view == "register":
           CareerSync syncs <strong>your</strong> Gmail inbox privately.
           <a href="https://myaccount.google.com/apppasswords" target="_blank"
              style="color:#2563EB;">Get App Password →</a>
-          &nbsp;App: <b>Mail</b> · Device: <b>Other</b> → name it <b>CareerSync</b>
+          App: <b>Mail</b> · Device: <b>Other</b> → name it <b>CareerSync</b>
         </p>""", unsafe_allow_html=True)
-
         gm_acc  = st.text_input("Your Gmail address",      placeholder="yourname@gmail.com")
         gm_pass = st.text_input("Your Gmail App Password",
                                 placeholder="e.g. dqaycelrxuobpxee (16 chars)",
-                                type="password",
-                                help="NOT your Gmail password. Generate at myaccount.google.com/apppasswords")
+                                type="password")
         sub = st.form_submit_button("Create Account", use_container_width=True)
 
     if sub:
@@ -394,7 +372,8 @@ elif st.session_state.auth_view == "register":
                 st.success("✅ Account created! Signing you in...")
                 user = login_user(r_em, r_pw)
                 if user:
-                    st.session_state.user = user
+                    st.session_state.user    = user
+                    st.session_state.user_id = user["id"]
                     st.switch_page("pages/1_Dashboard.py")
             else:
                 st.error(f"❌ {msg}")
