@@ -605,6 +605,4 @@ elif st.session_state.auth_view == "register":
     st.markdown("""
     <div style="text-align:center;padding:16px 0;font-size:0.7rem;color:#94a3b8;font-family:'Inter',sans-serif;">
       © 2026 CareerSync Inc. All rights reserved.</div>
-    """, unsafe_allow_html=True)git add app.py
-git commit -m "final - matches new reference design exactly"
-git push origin main --force
+    """, unsafe_allow_html=True)
