@@ -120,11 +120,19 @@ if st.session_state.auth_view == "landing":
     }
     .nav-cta:hover{background:#1d4ed8;}
 
-    /* Hide nav center links on mobile */
+    /* Mobile nav */
     @media(max-width:640px){
-      .nav-center{display:none;}
-      .nav-login{display:none;}
-      .nav-cta{padding:7px 14px;font-size:0.78rem;}
+      .nav{padding:0 1.2rem;height:56px;}
+      .nav-center{display:none!important;}
+      .nav-login{
+        display:inline-block!important;
+        font-size:0.82rem;font-weight:600;
+        color:#0f172a;text-decoration:none!important;
+        white-space:nowrap;padding:7px 10px;
+      }
+      .nav-right{gap:6px;align-items:center;}
+      .nav-cta{padding:7px 12px;font-size:0.8rem;}
+      .nav-brand{font-size:0.92rem;}
     }
 
     /* ══ HERO ══ */
@@ -135,13 +143,19 @@ if st.session_state.auth_view == "landing":
       gap:56px;align-items:center;
     }
     @media(max-width:860px){
-      .hero{grid-template-columns:1fr;padding:48px 1.5rem 40px;gap:40px;text-align:center;}
+      .hero{grid-template-columns:1fr;padding:40px 1.5rem 36px;gap:36px;text-align:center;}
       .hero-desc{max-width:100%!important;margin-left:auto;margin-right:auto;}
-      .hero-btns{justify-content:center;}
-      .trusted{justify-content:center;}
+      .hero-btns{justify-content:center;flex-wrap:wrap;gap:12px;}
+      .trusted{justify-content:center;flex-wrap:wrap;gap:8px;}
+      .trusted-names{justify-content:center;}
     }
     @media(max-width:480px){
-      .hero{padding:32px 1.2rem 32px;}
+      .hero{padding:28px 1.2rem 28px;}
+      .hero h1{font-size:2.1rem;letter-spacing:-1px;}
+      .hero-tag{font-size:0.68rem;}
+      .btn-hero-p{width:100%;text-align:center;padding:14px;}
+      .btn-hero-s{width:100%;justify-content:center;}
+      .hero-btns{flex-direction:column;align-items:stretch;width:100%;}
     }
 
     .hero-tag{
@@ -219,7 +233,8 @@ if st.session_state.auth_view == "landing":
     .proof-logo{width:72px;height:20px;background:#94a3b8;border-radius:3px;}
 
     /* ══ FEATURES ══ */
-    .feat-wrap{background:#f8fafc;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:72px 2rem;}
+    .feat-wrap{background:#f8fafc;border-top:1px solid #f1f5f9;border-bottom:1px solid #f1f5f9;padding:56px 1.5rem;}
+    @media(max-width:480px){.feat-wrap{padding:44px 1.2rem;}}
     .feat-inner{max-width:1120px;margin:0 auto;}
     .feat-eyebrow{font-size:0.7rem;font-weight:600;color:#2563EB;text-transform:uppercase;letter-spacing:1.2px;text-align:center;margin-bottom:10px;}
     .feat-title{font-size:clamp(1.5rem,2.5vw,2.1rem);font-weight:700;color:#0d1b2a;text-align:center;margin-bottom:8px;letter-spacing:-0.3px;}
@@ -246,7 +261,8 @@ if st.session_state.auth_view == "landing":
     .feat-card-link:hover{text-decoration:underline!important;}
 
     /* ══ STATS ══ */
-    .stats-wrap{padding:64px 2rem;}
+    .stats-wrap{padding:56px 1.5rem;}
+    @media(max-width:480px){.stats-wrap{padding:40px 1.2rem;}}
     .stats-inner{max-width:1120px;margin:0 auto;}
     .stats-title{font-size:clamp(1.5rem,2.5vw,2.1rem);font-weight:700;color:#0d1b2a;text-align:center;margin-bottom:6px;letter-spacing:-0.3px;}
     .stats-sub{font-size:0.9rem;color:#64748b;text-align:center;margin-bottom:40px;}
@@ -269,7 +285,8 @@ if st.session_state.auth_view == "landing":
     .stat-lbl{font-size:0.72rem;font-weight:500;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;}
 
     /* ══ CTA ══ */
-    .cta-wrap{padding:0 2rem 56px;}
+    .cta-wrap{padding:0 1.5rem 48px;}
+    @media(max-width:480px){.cta-wrap{padding:0 1rem 36px;}}
     .cta-card{
       max-width:1120px;margin:0 auto;
       background:#0d1b2a;border-radius:20px;
@@ -307,9 +324,10 @@ if st.session_state.auth_view == "landing":
     }
 
     /* ══ FOOTER ══ */
-    .footer{
-      background:#fff;border-top:1px solid #f1f5f9;
-      padding:20px 2rem;
+    .footer{background:#fff;border-top:1px solid #f1f5f9;padding:18px 1.5rem;}
+    @media(max-width:480px){
+      .footer-inner{flex-direction:column;text-align:center;gap:8px;}
+      .footer-icons{justify-content:center;}
     }
     .footer-inner{
       max-width:1120px;margin:0 auto;
@@ -548,7 +566,7 @@ elif st.session_state.auth_view == "login":
       </div>
 
       <!-- Card -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:36px 32px;width:100%;max-width:420px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:clamp(24px,5vw,36px) clamp(20px,5vw,32px);width:100%;max-width:420px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
         <div style="font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:5px;letter-spacing:-0.5px;">Welcome back</div>
         <div style="font-size:0.875rem;color:#64748b;margin-bottom:28px;">Enter your details to sign in</div>
     """, unsafe_allow_html=True)
@@ -635,7 +653,7 @@ elif st.session_state.auth_view == "register":
       </div>
 
       <!-- Card -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:32px 28px;width:100%;max-width:460px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
+      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:clamp(22px,5vw,32px) clamp(18px,5vw,28px);width:100%;max-width:460px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
         <div style="font-size:1.35rem;font-weight:800;color:#0f172a;margin-bottom:5px;letter-spacing:-0.5px;">Create your account</div>
         <div style="font-size:0.875rem;color:#64748b;margin-bottom:26px;">Your private dashboard synced to Gmail</div>
     """, unsafe_allow_html=True)
