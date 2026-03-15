@@ -306,7 +306,11 @@ if st.session_state.auth_view == "landing":
         </div>
         <span class="nav-brand">CareerSync</span>
       </div>
-      
+      <div class="nav-links">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="#how-it-works">How it Works</a>
+        <a class="nav-link" href="#pricing">Pricing</a>
+      </div>
       <div class="nav-right">
         <a class="nav-login" href="/?nav=login">Log in</a>
         <a class="nav-cta"   href="/?nav=signup">Start Tracking</a>
