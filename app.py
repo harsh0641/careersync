@@ -108,19 +108,26 @@ if st.session_state.auth_view == "landing":
     .nav-icon svg{color:#fff;}
     .nav-brand{font-size:1.1rem;font-weight:700;color:#0f172a;letter-spacing:-0.3px;}
     .nav-links{display:flex;align-items:center;gap:32px;}
-    .nav-link{font-size:0.875rem;font-weight:500;color:#64748b;text-decoration:none;transition:color 0.15s;}
-    .nav-link:hover{color:#0f172a;}
+    .nav-link{
+      font-size:0.875rem;font-weight:500;color:#64748b;
+      text-decoration:none!important;transition:color 0.15s;
+    }
+    .nav-link:hover{color:#0f172a;text-decoration:none!important;}
     .nav-right{display:flex;align-items:center;gap:16px;}
-    .nav-login{font-size:0.875rem;font-weight:600;color:#0f172a;text-decoration:none;transition:color 0.15s;}
-    .nav-login:hover{color:#2563EB;}
+    .nav-login{
+      font-size:0.875rem;font-weight:600;color:#0f172a;
+      text-decoration:none!important;transition:color 0.15s;
+    }
+    .nav-login:hover{color:#2563EB;text-decoration:none!important;}
     .nav-cta{
-      background:#2563EB;color:#fff;border:none;border-radius:8px;
+      background:#2563EB;color:#fff!important;border:none;border-radius:8px;
       padding:9px 20px;font-size:0.875rem;font-weight:700;
       cursor:pointer;font-family:'Inter',sans-serif;
-      text-decoration:none;display:inline-block;
+      text-decoration:none!important;display:inline-block;
       transition:all 0.15s;letter-spacing:-0.1px;
     }
-    .nav-cta:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,0.3);}
+    .nav-cta:hover{background:#1d4ed8;box-shadow:0 4px 12px rgba(37,99,235,0.3);text-decoration:none!important;}
+    a{text-decoration:none!important;}
 
     /* ── HERO ── */
     .hero{
@@ -135,8 +142,8 @@ if st.session_state.auth_view == "landing":
       border:1px solid #e2e8f0;font-size:0.8rem;color:#64748b;
       margin-bottom:28px;cursor:default;
     }
-    .hero-announce a{font-weight:600;color:#2563EB;text-decoration:none;}
-    .hero-announce a:hover{text-decoration:underline;}
+    .hero-announce a{font-weight:600;color:#2563EB;text-decoration:none!important;}
+    .hero-announce a:hover{text-decoration:underline!important;}
 
     .hero h1{
       font-size:clamp(2.6rem,5vw,4.2rem);font-weight:800;
@@ -231,8 +238,8 @@ if st.session_state.auth_view == "landing":
     .feat-card:hover .feat-card-icon{background:#2563EB;}
     .feat-card-title{font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:8px;}
     .feat-card-desc{font-size:0.85rem;color:#64748b;line-height:1.65;margin-bottom:16px;}
-    .feat-card-link{font-size:0.82rem;font-weight:600;color:#2563EB;text-decoration:none;}
-    .feat-card-link:hover{text-decoration:underline;}
+    .feat-card-link{font-size:0.82rem;font-weight:600;color:#2563EB;text-decoration:none!important;}
+    .feat-card-link:hover{text-decoration:underline!important;}
 
     /* ── STATS ── */
     .stats-section{padding:80px 2rem;}
@@ -457,45 +464,91 @@ if st.session_state.auth_view == "landing":
 elif st.session_state.auth_view == "login":
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f8fafc!important;font-family:'Inter',sans-serif!important;}
-    .block-container{padding:2rem 1rem!important;max-width:400px!important;margin:0 auto!important;}
-    div[data-testid="stTextInput"] input{border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;
-      font-size:0.875rem!important;font-family:'Inter',sans-serif!important;}
-    div[data-testid="stTextInput"] input:focus{border-color:#2563EB!important;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{font-size:0.82rem!important;font-weight:500!important;color:#374151!important;}
-    div[data-testid="stFormSubmitButton"] button{width:100%!important;border-radius:8px!important;
-      background:#2563EB!important;padding:11px!important;font-size:0.875rem!important;
-      font-weight:700!important;color:#fff!important;border:none!important;
-      font-family:'Inter',sans-serif!important;}
+      background:#f1f5f9!important;font-family:'Inter',sans-serif!important;}
+    .block-container{padding:0!important;max-width:100%!important;margin:0!important;}
+    [data-testid="stVerticalBlock"]{gap:0!important;}
+
+    /* Card wrapper */
+    .login-page{
+      min-height:100vh;display:flex;flex-direction:column;
+      align-items:center;justify-content:center;
+      padding:40px 16px;background:#f1f5f9;
+    }
+    .login-logo{
+      display:flex;align-items:center;gap:9px;
+      margin-bottom:36px;
+    }
+    .login-logo-icon{
+      width:40px;height:40px;border-radius:10px;
+      background:#2563EB;display:flex;align-items:center;justify-content:center;
+    }
+    .login-logo-text{font-size:1.15rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;}
+    .login-card{
+      background:#fff;border-radius:16px;
+      border:1px solid #e2e8f0;
+      padding:36px 32px;width:100%;max-width:440px;
+      box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);
+    }
+    .login-title{font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-0.5px;font-family:'Inter',sans-serif;}
+    .login-sub{font-size:0.875rem;color:#64748b;margin-bottom:28px;font-family:'Inter',sans-serif;}
+
+    /* Inputs inside card */
+    div[data-testid="stTextInput"] input{
+      border-radius:8px!important;border:1.5px solid #e2e8f0!important;
+      background:#f8fafc!important;padding:12px 14px!important;
+      color:#0f172a!important;font-size:0.875rem!important;
+      font-family:'Inter',sans-serif!important;
+    }
+    div[data-testid="stTextInput"] input:focus{
+      border-color:#2563EB!important;background:#fff!important;
+      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;
+    }
+    div[data-testid="stTextInput"] label{
+      font-size:0.82rem!important;font-weight:500!important;
+      color:#374151!important;font-family:'Inter',sans-serif!important;
+    }
+    div[data-testid="stFormSubmitButton"] button{
+      width:100%!important;border-radius:8px!important;
+      background:#2563EB!important;padding:13px!important;
+      font-size:0.9rem!important;font-weight:700!important;
+      color:#fff!important;border:none!important;
+      font-family:'Inter',sans-serif!important;
+      box-shadow:0 2px 8px rgba(37,99,235,0.25)!important;
+      margin-top:4px!important;
+    }
     div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
-    div.stButton>button{background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.82rem!important;font-weight:600!important;
-      box-shadow:none!important;font-family:'Inter',sans-serif!important;}
+    div.stButton>button{
+      background:transparent!important;color:#2563EB!important;border:none!important;
+      padding:4px!important;font-size:0.875rem!important;font-weight:600!important;
+      box-shadow:none!important;font-family:'Inter',sans-serif!important;
+      text-decoration:none!important;
+    }
+    div.stButton>button:hover{text-decoration:underline!important;}
     </style>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center;padding:52px 0 28px;">
-      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:24px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:#2563EB;display:flex;align-items:center;justify-content:center;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <div class="login-page">
+      <div class="login-logo">
+        <div class="login-logo-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
           </svg>
         </div>
-        <span style="font-size:1.05rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;">CareerSync</span>
+        <span class="login-logo-text">CareerSync</span>
       </div>
-      <h2 style="font-size:1.2rem;font-weight:700;color:#0f172a;margin-bottom:5px;font-family:'Inter',sans-serif;letter-spacing:-0.3px;">Welcome back</h2>
-      <p style="font-size:0.82rem;color:#64748b;font-family:'Inter',sans-serif;">Enter your details to sign in</p>
-    </div>
+      <div class="login-card">
+        <div class="login-title">Welcome back</div>
+        <div class="login-sub">Enter your details to sign in</div>
     """, unsafe_allow_html=True)
 
     with st.form("login_form"):
         email    = st.text_input("Email address", placeholder="name@company.com")
         password = st.text_input("Password", placeholder="••••••••", type="password")
         sub      = st.form_submit_button("Sign in", use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)  # close card
 
     if sub:
         if not email or not password:
@@ -510,13 +563,16 @@ elif st.session_state.auth_view == "login":
             else:
                 st.error("❌ Invalid email or password.")
 
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    st.markdown("""
+      <div style="margin-top:20px;text-align:center;">
+    """, unsafe_allow_html=True)
     _, bc, _ = st.columns([1, 2, 1])
     with bc:
         if st.button("Don't have an account? Sign up →", key="go_reg", use_container_width=True):
             go("register"); st.rerun()
-    if st.button("← Back to home", key="back_home"):
-        go("landing"); st.rerun()
+        if st.button("← Back to home", key="back_home", use_container_width=True):
+            go("landing"); st.rerun()
+    st.markdown("</div></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -525,39 +581,50 @@ elif st.session_state.auth_view == "login":
 elif st.session_state.auth_view == "register":
     st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
     body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f8fafc!important;font-family:'Inter',sans-serif!important;}
-    .block-container{padding:2rem 1rem!important;max-width:460px!important;margin:0 auto!important;}
-    div[data-testid="stTextInput"] input{border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#fff!important;padding:11px 14px!important;color:#0f172a!important;
-      font-size:0.875rem!important;font-family:'Inter',sans-serif!important;}
-    div[data-testid="stTextInput"] input:focus{border-color:#2563EB!important;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{font-size:0.82rem!important;font-weight:500!important;color:#374151!important;}
-    div[data-testid="stFormSubmitButton"] button{width:100%!important;border-radius:8px!important;
-      background:#2563EB!important;padding:11px!important;font-size:0.875rem!important;
-      font-weight:700!important;color:#fff!important;border:none!important;
+      background:#f1f5f9!important;font-family:'Inter',sans-serif!important;}
+    .block-container{padding:0!important;max-width:100%!important;margin:0!important;}
+    [data-testid="stVerticalBlock"]{gap:0!important;}
+    div[data-testid="stTextInput"] input{
+      border-radius:8px!important;border:1.5px solid #e2e8f0!important;
+      background:#f8fafc!important;padding:12px 14px!important;
+      color:#0f172a!important;font-size:0.875rem!important;
       font-family:'Inter',sans-serif!important;}
+    div[data-testid="stTextInput"] input:focus{
+      border-color:#2563EB!important;background:#fff!important;
+      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
+    div[data-testid="stTextInput"] label{
+      font-size:0.82rem!important;font-weight:500!important;
+      color:#374151!important;font-family:'Inter',sans-serif!important;}
+    div[data-testid="stFormSubmitButton"] button{
+      width:100%!important;border-radius:8px!important;
+      background:#2563EB!important;padding:13px!important;
+      font-size:0.9rem!important;font-weight:700!important;
+      color:#fff!important;border:none!important;
+      font-family:'Inter',sans-serif!important;
+      box-shadow:0 2px 8px rgba(37,99,235,0.25)!important;
+      margin-top:4px!important;}
     div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
-    div.stButton>button{background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.82rem!important;font-weight:600!important;
+    div.stButton>button{
+      background:transparent!important;color:#2563EB!important;border:none!important;
+      padding:4px!important;font-size:0.875rem!important;font-weight:600!important;
       box-shadow:none!important;font-family:'Inter',sans-serif!important;}
     </style>""", unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center;padding:40px 0 24px;">
-      <div style="display:inline-flex;align-items:center;gap:7px;margin-bottom:22px;">
-        <div style="width:32px;height:32px;border-radius:8px;background:#2563EB;display:flex;align-items:center;justify-content:center;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 16px;background:#f1f5f9;">
+      <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
+        <div style="width:40px;height:40px;border-radius:10px;background:#2563EB;display:flex;align-items:center;justify-content:center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
           </svg>
         </div>
-        <span style="font-size:1.05rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;">CareerSync</span>
+        <span style="font-size:1.15rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;">CareerSync</span>
       </div>
-      <h2 style="font-size:1.2rem;font-weight:700;color:#0f172a;margin-bottom:5px;font-family:'Inter',sans-serif;letter-spacing:-0.3px;">Create your account</h2>
-      <p style="font-size:0.82rem;color:#64748b;font-family:'Inter',sans-serif;">Your private dashboard synced to Gmail</p>
-    </div>
+      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:36px 32px;width:100%;max-width:460px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
+        <div style="font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-0.5px;font-family:'Inter',sans-serif;">Create your account</div>
+        <div style="font-size:0.875rem;color:#64748b;margin-bottom:28px;font-family:'Inter',sans-serif;">Your private dashboard synced to Gmail</div>
     """, unsafe_allow_html=True)
 
     with st.form("register_form"):
@@ -569,7 +636,7 @@ elif st.session_state.auth_view == "register":
         <div style="margin:12px 0 6px;padding-top:12px;border-top:1px solid #f1f5f9;">
           <p style="font-size:0.72rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;font-family:'Inter',sans-serif;">📬 Gmail Sync</p>
           <p style="font-size:0.72rem;color:#94a3b8;margin:0 0 6px;font-family:'Inter',sans-serif;">
-            <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#2563EB;font-weight:600;">Get App Password →</a>
+            <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#2563EB;font-weight:600;text-decoration:none;">Get App Password →</a>
             App: Mail · Device: Other · Name: CareerSync
           </p>
         </div>
@@ -577,6 +644,8 @@ elif st.session_state.auth_view == "register":
         gm_acc  = st.text_input("Your Gmail address",  placeholder="yourname@gmail.com")
         gm_pass = st.text_input("Gmail App Password",  placeholder="abcd efgh ijkl mnop", type="password")
         sub     = st.form_submit_button("Create Account", use_container_width=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if sub:
         if r_pw != r_pw2:
@@ -595,14 +664,16 @@ elif st.session_state.auth_view == "register":
             else:
                 st.error(f"❌ {msg}")
 
-    st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:20px;'>", unsafe_allow_html=True)
     _, bc2, _ = st.columns([1, 2, 1])
     with bc2:
         if st.button("Already have an account? Sign in →", key="go_login", use_container_width=True):
             go("login"); st.rerun()
-    if st.button("← Back to home", key="back_home_r"):
-        go("landing"); st.rerun()
+        if st.button("← Back to home", key="back_home_r", use_container_width=True):
+            go("landing"); st.rerun()
     st.markdown("""
+    </div>
     <div style="text-align:center;padding:16px 0;font-size:0.7rem;color:#94a3b8;font-family:'Inter',sans-serif;">
       © 2026 CareerSync Inc. All rights reserved.</div>
+    </div>
     """, unsafe_allow_html=True)
