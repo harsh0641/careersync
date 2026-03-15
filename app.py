@@ -1,7 +1,7 @@
 """
 app.py — CareerSync Landing + Login + Register
-Persistent login via st.query_params (survives refresh).
-No components.html redirects — pure Streamlit routing.
+Persistent login via st.query_params ?uid=
+Logout clears uid from URL completely.
 """
 
 import os, sys
@@ -19,11 +19,15 @@ st.set_page_config(
 from auth import register_user, login_user, supabase_ready, get_user_by_id
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PERSISTENT LOGIN — restore from ?uid= in URL
+# PERSISTENT LOGIN
 # ══════════════════════════════════════════════════════════════════════════════
 def _restore_session():
+    """Restore user from ?uid= only if not explicitly logged out."""
     if st.session_state.get("user"):
         return True
+    # If user just logged out, do NOT restore
+    if st.session_state.get("logged_out"):
+        return False
     uid = st.query_params.get("uid", "")
     if uid:
         user = get_user_by_id(uid)
@@ -34,14 +38,18 @@ def _restore_session():
     return False
 
 def _set_login(user: dict):
-    """Save user to session + URL query param."""
+    """Save user to session + URL."""
+    st.session_state.pop("logged_out", None)
     st.session_state["user"]    = user
     st.session_state["user_id"] = user["id"]
     st.query_params["uid"]      = user["id"]
 
 def _clear_login():
+    """Clear session and URL completely."""
+    st.session_state["logged_out"] = True
     for k in ["user", "user_id"]:
         st.session_state.pop(k, None)
+    # Clear ALL query params so ?uid= is gone
     st.query_params.clear()
 
 # Restore on every load
@@ -113,7 +121,7 @@ if st.session_state.auth_view == "landing":
     </style>
     """, unsafe_allow_html=True)
 
-    # Nav bar
+    # Nav
     st.markdown('<div class="cs-nav"><div class="cs-nav-logo">⇄ CareerSync</div></div>',
                 unsafe_allow_html=True)
     _, nl, ns = st.columns([6, 1, 1])
@@ -133,7 +141,6 @@ if st.session_state.auth_view == "landing":
     </div>
     """, unsafe_allow_html=True)
 
-    # CTA buttons
     _, c1, c2, _ = st.columns([2, 1.5, 1.5, 2])
     with c1:
         if st.button("🚀 Start Tracking Free", key="hero_signup", use_container_width=True, type="primary"):
@@ -142,7 +149,6 @@ if st.session_state.auth_view == "landing":
         if st.button("Sign In", key="hero_login", use_container_width=True):
             st.session_state.auth_view = "login"; st.rerun()
 
-    # Stats
     st.markdown("""
     <div class="stats-bar">
       <div class="stat-item"><div class="stat-num-big">10k+</div><div class="stat-label-sm">Active Users</div></div>
@@ -150,10 +156,6 @@ if st.session_state.auth_view == "landing":
       <div class="stat-item"><div class="stat-num-big">25k+</div><div class="stat-label-sm">Interviews</div></div>
       <div class="stat-item"><div class="stat-num-big">94%</div><div class="stat-label-sm">Success Rate</div></div>
     </div>
-    """, unsafe_allow_html=True)
-
-    # Features
-    st.markdown("""
     <div class="features-section">
       <div style="text-align:center;font-size:1.6rem;font-weight:700;color:#0f172a;margin-bottom:6px;">Powerful Features</div>
       <div style="text-align:center;color:#64748b;margin-bottom:28px;">Everything you need to land your next role faster.</div>
@@ -171,7 +173,6 @@ if st.session_state.auth_view == "landing":
     </div>
     """, unsafe_allow_html=True)
 
-    # Bottom CTA
     st.markdown("""
     <div style="text-align:center;padding:40px 2rem;background:#0f172a;
                 border-radius:20px;margin:0 2rem 40px;">
@@ -198,8 +199,7 @@ if st.session_state.auth_view == "landing":
 elif st.session_state.auth_view == "login":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f6f6f8!important;}
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
     .block-container{padding:2rem 1rem!important;max-width:460px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1px solid #cbd5e1!important;
       background:#fff!important;padding:12px 16px!important;color:#0f172a!important;font-size:0.875rem!important;}
@@ -259,8 +259,7 @@ elif st.session_state.auth_view == "login":
 elif st.session_state.auth_view == "register":
     st.markdown("""
     <style>
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f6f6f8!important;}
+    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
     .block-container{padding:2rem 1rem!important;max-width:520px!important;margin:0 auto!important;}
     div[data-testid="stTextInput"] input{border-radius:8px!important;border:1px solid #cbd5e1!important;
       background:#fff!important;padding:12px 16px!important;color:#0f172a!important;font-size:0.875rem!important;}
