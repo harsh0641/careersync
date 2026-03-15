@@ -79,6 +79,69 @@ section.main,[data-testid="stMain"]{
 </style>
 """, unsafe_allow_html=True)
 
+# ── Auth CSS (used by login + register pages) ─────────────────────────────────
+_AUTH_CSS = """
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
+  background:#f0f2f5!important;font-family:'Inter',sans-serif!important;}
+.block-container{padding:0!important;max-width:100%!important;margin:0!important;}
+[data-testid="stVerticalBlock"]{gap:0!important;}
+.auth-page{min-height:100vh;display:flex;flex-direction:column;background:#f0f2f5;}
+.auth-nav{height:56px;background:#fff;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;
+  justify-content:space-between;padding:0 clamp(1rem,4vw,2rem);flex-shrink:0;}
+.auth-nav-logo{display:flex;align-items:center;gap:8px;}
+.auth-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:#2563EB;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.auth-nav-brand{font-size:0.95rem;font-weight:700;color:#0f172a;}
+.auth-nav-right{font-size:0.82rem;color:#64748b;display:flex;align-items:center;gap:8px;
+  flex-wrap:wrap;justify-content:flex-end;}
+.auth-nav-link{color:#2563EB;font-weight:600;font-size:0.82rem;border:1.5px solid #2563EB;
+  border-radius:7px;padding:6px 14px;text-decoration:none!important;transition:all 0.15s;white-space:nowrap;}
+.auth-nav-link:hover{background:#2563EB;color:#fff!important;}
+.auth-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(20px,5vh,48px) clamp(16px,4vw,24px);}
+.auth-logo{display:flex;align-items:center;gap:10px;margin-bottom:24px;}
+.auth-logo-icon{width:44px;height:44px;border-radius:12px;background:#2563EB;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.auth-logo-text{font-size:1.15rem;font-weight:700;color:#0f172a;}
+.auth-card{background:#fff;border-radius:16px;border:1px solid #e8edf2;
+  padding:clamp(24px,5vw,40px) clamp(20px,5vw,40px);
+  width:100%;max-width:440px;box-shadow:0 2px 16px rgba(0,0,0,0.07);}
+.auth-card-wide{max-width:480px;}
+.auth-card-title{font-size:clamp(1.3rem,4vw,1.6rem);font-weight:800;color:#0f172a;
+  margin-bottom:6px;letter-spacing:-0.4px;text-align:center;}
+.auth-card-sub{font-size:0.875rem;color:#64748b;margin-bottom:28px;text-align:center;line-height:1.5;}
+div[data-testid="stTextInput"] input{
+  border-radius:10px!important;border:1.5px solid #e2e8f0!important;
+  background:#fff!important;padding:12px 14px!important;color:#0f172a!important;
+  font-size:0.9rem!important;font-family:'Inter',sans-serif!important;width:100%!important;}
+div[data-testid="stTextInput"] input:focus{
+  border-color:#2563EB!important;box-shadow:0 0 0 3px rgba(37,99,235,0.1)!important;}
+div[data-testid="stTextInput"] input::placeholder{color:#94a3b8!important;}
+div[data-testid="stTextInput"] label{
+  font-size:0.82rem!important;font-weight:600!important;color:#374151!important;
+  font-family:'Inter',sans-serif!important;margin-bottom:4px!important;}
+div[data-testid="stFormSubmitButton"] button{
+  width:100%!important;border-radius:10px!important;background:#2563EB!important;
+  padding:14px!important;font-size:0.95rem!important;font-weight:700!important;
+  color:#fff!important;border:none!important;font-family:'Inter',sans-serif!important;
+  box-shadow:0 2px 10px rgba(37,99,235,0.28)!important;margin-top:6px!important;
+  letter-spacing:-0.1px!important;}
+div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
+div.stButton>button{background:transparent!important;border:none!important;padding:3px!important;
+  font-size:0.82rem!important;box-shadow:none!important;font-family:'Inter',sans-serif!important;
+  color:#64748b!important;font-weight:400!important;}
+div.stButton>button:hover{color:#0f172a!important;}
+.auth-footer{text-align:center;padding:20px 16px;font-size:0.72rem;color:#94a3b8;font-family:'Inter',sans-serif;}
+@media(max-width:480px){
+  .auth-nav-right span{display:none;}
+  .auth-card{border-radius:12px;}
+}
+</style>
+"""
+
 # ══════════════════════════════════════════════════════════════════════════════
 # LANDING
 # ══════════════════════════════════════════════════════════════════════════════
@@ -509,74 +572,127 @@ if st.session_state.auth_view == "landing":
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LOGIN
+
+# ══════════════════════════════════════════════════════════════════════════════
+# LOGIN — CSS-only card approach (no HTML wrapper around st.form)
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.auth_view == "login":
     st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f1f5f9!important;font-family:'Inter',sans-serif!important;}
-    .block-container{padding:0!important;max-width:100%!important;margin:0!important;}
-    [data-testid="stVerticalBlock"]{gap:0!important;}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+html,body,.stApp,[data-testid="stAppViewContainer"],
+section.main,[data-testid="stMain"]{
+  background:#f0f2f5!important;font-family:'Inter',sans-serif!important;
+  margin:0!important;padding:0!important;
+}
+/* Center the entire page content */
+.block-container{
+  padding:0!important;margin:0 auto!important;
+  max-width:460px!important;
+  padding-top:clamp(40px,8vh,80px)!important;
+  padding-bottom:40px!important;
+  padding-left:16px!important;
+  padding-right:16px!important;
+}
+[data-testid="stVerticalBlock"]{gap:0!important;}
 
-    /* Inputs */
-    div[data-testid="stTextInput"] input{
-      border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#f8fafc!important;padding:12px 14px!important;
-      color:#0f172a!important;font-size:0.875rem!important;
-      font-family:'Inter',sans-serif!important;}
-    div[data-testid="stTextInput"] input:focus{
-      border-color:#2563EB!important;background:#fff!important;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{
-      font-size:0.8rem!important;font-weight:500!important;
-      color:#374151!important;font-family:'Inter',sans-serif!important;}
+/* Logo area */
+.login-logo-wrap{
+  display:flex;align-items:center;justify-content:center;
+  gap:10px;margin-bottom:28px;
+}
+.login-logo-icon{
+  width:44px;height:44px;border-radius:12px;background:#2563EB;
+  display:flex;align-items:center;justify-content:center;
+}
+.login-logo-text{font-size:1.15rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;}
 
-    /* Submit button — white text */
-    div[data-testid="stFormSubmitButton"] button{
-      width:100%!important;border-radius:8px!important;
-      background:#2563EB!important;padding:13px!important;
-      font-size:0.9rem!important;font-weight:700!important;
-      color:#fff!important;border:none!important;
-      font-family:'Inter',sans-serif!important;
-      box-shadow:0 2px 8px rgba(37,99,235,0.25)!important;
-      margin-top:4px!important;letter-spacing:-0.1px!important;}
-    div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
+/* Card — wrap the form visually */
+[data-testid="stForm"]{
+  background:#fff!important;
+  border-radius:16px!important;
+  border:1px solid #e2e8f0!important;
+  padding:32px 32px 28px!important;
+  box-shadow:0 2px 20px rgba(0,0,0,0.07)!important;
+  margin-bottom:0!important;
+}
+@media(max-width:480px){
+  [data-testid="stForm"]{padding:24px 20px 20px!important;}
+  .block-container{padding-top:32px!important;}
+}
 
-    /* Ghost buttons */
-    div.stButton>button{
-      background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.875rem!important;font-weight:600!important;
-      box-shadow:none!important;font-family:'Inter',sans-serif!important;}
-    div.stButton>button:hover{text-decoration:underline!important;}
-    </style>""", unsafe_allow_html=True)
+/* Title + subtitle inside form — injected via st.markdown inside form */
+.form-title{font-size:1.45rem;font-weight:800;color:#0f172a;margin-bottom:6px;letter-spacing:-0.4px;text-align:center;font-family:'Inter',sans-serif;}
+.form-sub{font-size:0.875rem;color:#64748b;margin-bottom:24px;text-align:center;font-family:'Inter',sans-serif;}
 
+/* Inputs */
+div[data-testid="stTextInput"]{margin-bottom:4px!important;}
+div[data-testid="stTextInput"] label{
+  font-size:0.82rem!important;font-weight:600!important;
+  color:#374151!important;font-family:'Inter',sans-serif!important;}
+div[data-testid="stTextInput"] input{
+  border-radius:10px!important;border:1.5px solid #e8edf2!important;
+  background:#f8fafc!important;padding:12px 14px!important;
+  color:#0f172a!important;font-size:0.9rem!important;
+  font-family:'Inter',sans-serif!important;}
+div[data-testid="stTextInput"] input:focus{
+  border-color:#2563EB!important;background:#fff!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.1)!important;}
+div[data-testid="stTextInput"] input::placeholder{color:#94a3b8!important;}
+
+/* Submit button */
+div[data-testid="stFormSubmitButton"]{margin-top:8px!important;}
+div[data-testid="stFormSubmitButton"] button{
+  width:100%!important;border-radius:10px!important;
+  background:#2563EB!important;padding:14px!important;
+  font-size:0.95rem!important;font-weight:700!important;
+  color:#fff!important;border:none!important;
+  font-family:'Inter',sans-serif!important;
+  box-shadow:0 2px 10px rgba(37,99,235,0.25)!important;
+  letter-spacing:-0.1px!important;}
+div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
+
+/* Below-card links */
+.auth-below{
+  margin-top:18px;text-align:center;
+  font-size:0.875rem;color:#64748b;font-family:'Inter',sans-serif;
+}
+.auth-below a{color:#2563EB;font-weight:600;text-decoration:none!important;}
+.auth-footer{
+  margin-top:24px;text-align:center;
+  font-size:0.72rem;color:#94a3b8;font-family:'Inter',sans-serif;
+}
+
+/* Ghost back button */
+div.stButton>button{
+  background:transparent!important;border:none!important;
+  color:#94a3b8!important;font-size:0.78rem!important;font-weight:400!important;
+  box-shadow:none!important;padding:2px!important;
+  font-family:'Inter',sans-serif!important;width:100%!important;
+  margin-top:4px!important;
+}
+div.stButton>button:hover{color:#64748b!important;}
+</style>
+""", unsafe_allow_html=True)
+
+    # Logo
     st.markdown("""
-    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;background:#f1f5f9;font-family:'Inter',sans-serif;">
+<div class="login-logo-wrap">
+  <div class="login-logo-icon">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+    </svg>
+  </div>
+  <span class="login-logo-text">CareerSync</span>
+</div>
+""", unsafe_allow_html=True)
 
-      <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
-        <div style="width:40px;height:40px;border-radius:10px;background:#2563EB;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-          </svg>
-        </div>
-        <span style="font-size:1.1rem;font-weight:700;color:#0f172a;">CareerSync</span>
-      </div>
-
-      <!-- Card -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:clamp(24px,5vw,36px) clamp(20px,5vw,32px);width:100%;max-width:420px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
-        <div style="font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:5px;letter-spacing:-0.5px;">Welcome back</div>
-        <div style="font-size:0.875rem;color:#64748b;margin-bottom:28px;">Enter your details to sign in</div>
-    """, unsafe_allow_html=True)
-
+    # Form (card styled via CSS targeting [data-testid="stForm"])
     with st.form("login_form"):
+        st.markdown('<div class="form-title">Welcome back</div><div class="form-sub">Please enter your details to sign in</div>', unsafe_allow_html=True)
         email    = st.text_input("Email address", placeholder="name@company.com")
         password = st.text_input("Password", placeholder="••••••••", type="password")
         sub      = st.form_submit_button("Sign in", use_container_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if sub:
         if not email or not password:
@@ -591,92 +707,149 @@ elif st.session_state.auth_view == "login":
             else:
                 st.error("❌ Invalid email or password.")
 
-    _, bc, _ = st.columns([1, 2, 1])
+    st.markdown("""
+<div class="auth-below">
+  Don't have an account?&nbsp;<a href="/?nav=signup">Sign up for free</a>
+</div>
+<div class="auth-footer">© 2026 CareerSync Inc. All rights reserved.</div>
+""", unsafe_allow_html=True)
+
+    _, bc, _ = st.columns([3, 2, 3])
     with bc:
-        if st.button("Don't have an account? Sign up →", key="go_reg", use_container_width=True):
-            go("register"); st.rerun()
         if st.button("← Back to home", key="back_home", use_container_width=True):
             go("landing"); st.rerun()
 
-    st.markdown("</div>", unsafe_allow_html=True)
-
 
 # ══════════════════════════════════════════════════════════════════════════════
-# REGISTER
+# REGISTER — same CSS-only card approach
 # ══════════════════════════════════════════════════════════════════════════════
 elif st.session_state.auth_view == "register":
     st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-    body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
-      background:#f1f5f9!important;font-family:'Inter',sans-serif!important;}
-    .block-container{padding:0!important;max-width:100%!important;margin:0!important;}
-    [data-testid="stVerticalBlock"]{gap:0!important;}
-    div[data-testid="stTextInput"] input{
-      border-radius:8px!important;border:1.5px solid #e2e8f0!important;
-      background:#f8fafc!important;padding:12px 14px!important;
-      color:#0f172a!important;font-size:0.875rem!important;
-      font-family:'Inter',sans-serif!important;}
-    div[data-testid="stTextInput"] input:focus{
-      border-color:#2563EB!important;background:#fff!important;
-      box-shadow:0 0 0 3px rgba(37,99,235,0.08)!important;}
-    div[data-testid="stTextInput"] label{
-      font-size:0.8rem!important;font-weight:500!important;
-      color:#374151!important;font-family:'Inter',sans-serif!important;}
-    div[data-testid="stFormSubmitButton"] button{
-      width:100%!important;border-radius:8px!important;
-      background:#2563EB!important;padding:13px!important;
-      font-size:0.9rem!important;font-weight:700!important;
-      color:#fff!important;border:none!important;
-      font-family:'Inter',sans-serif!important;
-      box-shadow:0 2px 8px rgba(37,99,235,0.25)!important;
-      margin-top:4px!important;letter-spacing:-0.1px!important;}
-    div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
-    div.stButton>button{
-      background:transparent!important;color:#2563EB!important;border:none!important;
-      padding:4px!important;font-size:0.875rem!important;font-weight:600!important;
-      box-shadow:none!important;font-family:'Inter',sans-serif!important;}
-    div.stButton>button:hover{text-decoration:underline!important;}
-    </style>""", unsafe_allow_html=True)
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+html,body,.stApp,[data-testid="stAppViewContainer"],
+section.main,[data-testid="stMain"]{
+  background:#f0f2f5!important;font-family:'Inter',sans-serif!important;
+  margin:0!important;padding:0!important;
+}
+/* Top nav bar */
+.reg-nav{
+  position:fixed;top:0;left:0;right:0;z-index:999;
+  height:56px;background:#fff;border-bottom:1px solid #f1f5f9;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 clamp(1rem,4vw,2.5rem);
+}
+.reg-nav-logo{display:flex;align-items:center;gap:8px;}
+.reg-nav-logo-icon{width:28px;height:28px;border-radius:7px;background:#2563EB;display:flex;align-items:center;justify-content:center;}
+.reg-nav-brand{font-size:0.95rem;font-weight:700;color:#0f172a;font-family:'Inter',sans-serif;}
+.reg-nav-right{display:flex;align-items:center;gap:10px;font-size:0.82rem;color:#64748b;font-family:'Inter',sans-serif;}
+.reg-nav-link{color:#2563EB;font-weight:600;border:1.5px solid #2563EB;border-radius:7px;padding:6px 14px;text-decoration:none!important;font-size:0.82rem;white-space:nowrap;transition:all 0.15s;}
+.reg-nav-link:hover{background:#2563EB;color:#fff!important;}
+@media(max-width:480px){.reg-nav-right span{display:none;}}
 
+/* Offset content below fixed nav */
+.block-container{
+  padding:0!important;margin:0 auto!important;
+  max-width:500px!important;
+  padding-top:clamp(72px,12vh,100px)!important;
+  padding-bottom:40px!important;
+  padding-left:16px!important;
+  padding-right:16px!important;
+}
+[data-testid="stVerticalBlock"]{gap:0!important;}
+
+/* Card */
+[data-testid="stForm"]{
+  background:#fff!important;
+  border-radius:16px!important;
+  border:1px solid #e2e8f0!important;
+  padding:32px 32px 28px!important;
+  box-shadow:0 2px 20px rgba(0,0,0,0.07)!important;
+}
+@media(max-width:480px){
+  [data-testid="stForm"]{padding:24px 18px 20px!important;}
+}
+
+.form-title{font-size:1.4rem;font-weight:800;color:#0f172a;margin-bottom:5px;letter-spacing:-0.4px;font-family:'Inter',sans-serif;}
+.form-sub{font-size:0.875rem;color:#64748b;margin-bottom:24px;font-family:'Inter',sans-serif;}
+
+div[data-testid="stTextInput"]{margin-bottom:2px!important;}
+div[data-testid="stTextInput"] label{
+  font-size:0.82rem!important;font-weight:600!important;
+  color:#374151!important;font-family:'Inter',sans-serif!important;}
+div[data-testid="stTextInput"] input{
+  border-radius:10px!important;border:1.5px solid #e8edf2!important;
+  background:#f8fafc!important;padding:11px 14px!important;
+  color:#0f172a!important;font-size:0.875rem!important;
+  font-family:'Inter',sans-serif!important;}
+div[data-testid="stTextInput"] input:focus{
+  border-color:#2563EB!important;background:#fff!important;
+  box-shadow:0 0 0 3px rgba(37,99,235,0.1)!important;}
+div[data-testid="stTextInput"] input::placeholder{color:#94a3b8!important;}
+
+div[data-testid="stFormSubmitButton"]{margin-top:8px!important;}
+div[data-testid="stFormSubmitButton"] button{
+  width:100%!important;border-radius:10px!important;
+  background:#2563EB!important;padding:14px!important;
+  font-size:0.95rem!important;font-weight:700!important;
+  color:#fff!important;border:none!important;
+  font-family:'Inter',sans-serif!important;
+  box-shadow:0 2px 10px rgba(37,99,235,0.25)!important;
+  letter-spacing:-0.1px!important;}
+div[data-testid="stFormSubmitButton"] button:hover{background:#1d4ed8!important;}
+
+.auth-below{margin-top:18px;text-align:center;font-size:0.875rem;color:#64748b;font-family:'Inter',sans-serif;}
+.auth-below a{color:#2563EB;font-weight:600;text-decoration:none!important;}
+.auth-footer{margin-top:20px;text-align:center;font-size:0.72rem;color:#94a3b8;font-family:'Inter',sans-serif;}
+.auth-footer a{color:#94a3b8;text-decoration:none!important;margin:0 5px;}
+
+div.stButton>button{
+  background:transparent!important;border:none!important;
+  color:#94a3b8!important;font-size:0.78rem!important;font-weight:400!important;
+  box-shadow:none!important;padding:2px!important;
+  font-family:'Inter',sans-serif!important;width:100%!important;
+}
+div.stButton>button:hover{color:#64748b!important;}
+</style>
+""", unsafe_allow_html=True)
+
+    # Fixed top nav
     st.markdown("""
-    <div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;background:#f1f5f9;font-family:'Inter',sans-serif;">
+<div class="reg-nav">
+  <div class="reg-nav-logo">
+    <div class="reg-nav-logo-icon">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
+      </svg>
+    </div>
+    <span class="reg-nav-brand">CareerSync</span>
+  </div>
+  <div class="reg-nav-right">
+    <span>Already have an account?</span>
+    <a class="reg-nav-link" href="/?nav=login">Log in</a>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
-      <!-- Logo -->
-      <div style="display:flex;align-items:center;gap:9px;margin-bottom:28px;">
-        <div style="width:40px;height:40px;border-radius:10px;background:#2563EB;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/>
-          </svg>
-        </div>
-        <span style="font-size:1.1rem;font-weight:700;color:#0f172a;">CareerSync</span>
-      </div>
-
-      <!-- Card -->
-      <div style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:clamp(22px,5vw,32px) clamp(18px,5vw,28px);width:100%;max-width:460px;box-shadow:0 4px 24px -4px rgba(0,0,0,0.08);">
-        <div style="font-size:1.35rem;font-weight:800;color:#0f172a;margin-bottom:5px;letter-spacing:-0.5px;">Create your account</div>
-        <div style="font-size:0.875rem;color:#64748b;margin-bottom:26px;">Your private dashboard synced to Gmail</div>
-    """, unsafe_allow_html=True)
-
+    # Form card
     with st.form("register_form"):
-        name  = st.text_input("Full name",        placeholder="John Smith")
-        r_em  = st.text_input("Email address",    placeholder="name@company.com")
-        r_pw  = st.text_input("Password",         placeholder="Min 6 characters", type="password")
-        r_pw2 = st.text_input("Confirm password", placeholder="Repeat password",  type="password")
+        st.markdown('<div class="form-title">Create your account</div><div class="form-sub">Join thousands of professionals today.</div>', unsafe_allow_html=True)
+        name  = st.text_input("Full Name",        placeholder="Enter your full name")
+        r_em  = st.text_input("Email Address",    placeholder="name@company.com")
+        r_pw  = st.text_input("Password",         placeholder="Create a strong password", type="password")
+        r_pw2 = st.text_input("Confirm Password", placeholder="Repeat your password",     type="password")
         st.markdown("""
-        <div style="margin:12px 0 6px;padding-top:12px;border-top:1px solid #f1f5f9;">
-          <p style="font-size:0.7rem;font-weight:600;color:#374151;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;">📬 Gmail Sync</p>
-          <p style="font-size:0.7rem;color:#94a3b8;margin:0 0 6px;">
-            <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#2563EB;font-weight:600;text-decoration:none;">Get App Password →</a>
-            &nbsp;App: Mail · Device: Other · Name: CareerSync
-          </p>
-        </div>
-        """, unsafe_allow_html=True)
-        gm_acc  = st.text_input("Your Gmail address",  placeholder="yourname@gmail.com")
-        gm_pass = st.text_input("Gmail App Password",  placeholder="abcd efgh ijkl mnop", type="password")
+<div style="margin:10px 0 4px;padding-top:10px;border-top:1px solid #f1f5f9;">
+  <p style="font-size:0.68rem;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;font-family:'Inter',sans-serif;">📬 Gmail Sync</p>
+  <p style="font-size:0.7rem;color:#94a3b8;margin:0;font-family:'Inter',sans-serif;">
+    <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:#2563EB;font-weight:600;text-decoration:none;">Get App Password →</a>
+    &nbsp;App: Mail · Device: Other · Name: CareerSync
+  </p>
+</div>
+""", unsafe_allow_html=True)
+        gm_acc  = st.text_input("Your Gmail Address", placeholder="yourname@gmail.com")
+        gm_pass = st.text_input("Gmail App Password", placeholder="abcd efgh ijkl mnop", type="password")
         sub     = st.form_submit_button("Create Account", use_container_width=True)
-
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if sub:
         if r_pw != r_pw2:
@@ -695,15 +868,12 @@ elif st.session_state.auth_view == "register":
             else:
                 st.error(f"❌ {msg}")
 
-    _, bc2, _ = st.columns([1, 2, 1])
-    with bc2:
-        if st.button("Already have an account? Sign in →", key="go_login", use_container_width=True):
-            go("login"); st.rerun()
-        if st.button("← Back to home", key="back_home_r", use_container_width=True):
-            go("landing"); st.rerun()
-
     st.markdown("""
-    <div style="text-align:center;padding:16px 0 8px;font-size:0.68rem;color:#94a3b8;font-family:'Inter',sans-serif;">
-      © 2026 CareerSync Inc. All rights reserved.</div>
-    </div>
-    """, unsafe_allow_html=True)
+<div class="auth-below">
+  Already have an account?&nbsp;<a href="/?nav=login">Log in</a>
+</div>
+<div class="auth-footer">
+  <a href="#">Help</a> · <a href="#">Privacy</a> · <a href="#">Terms</a><br>
+  © 2026 CareerSync Inc. All rights reserved.
+</div>
+""", unsafe_allow_html=True)
