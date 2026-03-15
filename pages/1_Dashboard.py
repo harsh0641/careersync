@@ -1,12 +1,14 @@
 """
 pages/1_Dashboard.py
-Restores login from query param ?uid= on every refresh.
+Restores login from localStorage on every refresh.
+Flow: JS reads cs_uid from localStorage → sets ?uid= in URL → Streamlit reads it.
 """
 
 import os, sys, math
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 
 from auth import get_user_by_id, inject_gmail_env, gmail_configured
@@ -18,7 +20,30 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# ── Restore session from ?uid= query param on every refresh ───────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 1 — Inject JS: read localStorage → set ?uid= in URL if missing
+# This runs FIRST before any session check, bridging localStorage → Streamlit
+# ══════════════════════════════════════════════════════════════════════════════
+components.html("""
+<script>
+(function() {
+    try {
+        var uid = localStorage.getItem('cs_uid');
+        if (uid) {
+            var params = new URLSearchParams(window.location.search);
+            if (!params.get('uid')) {
+                params.set('uid', uid);
+                window.location.replace(window.location.pathname + '?' + params.toString());
+            }
+        }
+    } catch(e) {}
+})();
+</script>
+""", height=0, scrolling=False)
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STEP 2 — Restore session from ?uid= query param
+# ══════════════════════════════════════════════════════════════════════════════
 def _restore():
     if st.session_state.get("user"):
         return True
@@ -31,10 +56,20 @@ def _restore():
             return True
     return False
 
-def _clear_login():
-    for k in ["user","user_id"]:
+def _logout():
+    """Clear session + localStorage + query params."""
+    for k in ["user", "user_id"]:
         st.session_state.pop(k, None)
     st.query_params.clear()
+    # Clear localStorage
+    components.html("""
+    <script>
+    try {
+        localStorage.removeItem('cs_uid');
+        console.log('CareerSync: logged out, localStorage cleared');
+    } catch(e) {}
+    </script>
+    """, height=0, scrolling=False)
 
 if not _restore():
     st.switch_page("app.py")
@@ -43,7 +78,17 @@ if not _restore():
 user = st.session_state["user"]
 inject_gmail_env(user)
 
-# ── Imports after auth guard ───────────────────────────────────────────────────
+# Keep localStorage in sync on every dashboard load
+uid = user.get("id", "")
+components.html(f"""
+<script>
+try {{
+    localStorage.setItem('cs_uid', '{uid}');
+}} catch(e) {{}}
+</script>
+""", height=0, scrolling=False)
+
+# ── Imports ────────────────────────────────────────────────────────────────────
 from database         import get_all_applications, update_stage, delete_application, upsert_application, update_recruiter_info
 from email_service    import fetch_application_emails
 from ai_service       import parse_emails_concurrent
@@ -66,8 +111,8 @@ with st.sidebar:
       text-align:left!important;justify-content:flex-start!important;
       background:transparent!important;color:#475569!important;
       border:none!important;box-shadow:none!important;
-      font-size:0.9rem!important;font-weight:500!important;padding:8px 12px!important;
-      border-radius:8px!important;width:100%!important;}
+      font-size:0.9rem!important;font-weight:500!important;
+      padding:8px 12px!important;border-radius:8px!important;width:100%!important;}
     [data-testid="stSidebar"] .stButton>button:hover{
       background:#f8fafc!important;color:#0f172a!important;}
     </style>
@@ -76,13 +121,12 @@ with st.sidebar:
     st.markdown("""
     <div style="display:flex;align-items:center;gap:8px;padding:20px 4px 24px;">
       <div style="width:32px;height:32px;background:#2563EB;border-radius:8px;
-                  display:flex;align-items:center;justify-content:center;
-                  color:#fff;font-size:16px;">💼</div>
+                  display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;">💼</div>
       <span style="font-size:1.15rem;font-weight:700;color:#0f172a;">CareerSync</span>
     </div>
     """, unsafe_allow_html=True)
 
-    # Active page highlight
+    # Active page
     st.markdown("""
     <div style="background:rgba(37,99,235,0.08);color:#2563EB;display:flex;
          align-items:center;gap:10px;padding:10px 12px;border-radius:8px;
@@ -107,20 +151,18 @@ with st.sidebar:
     st.markdown("<div style='height:12px'></div>", unsafe_allow_html=True)
     st.divider()
 
-    name       = user.get("name", "User")
+    name_disp  = user.get("name", "User")
     email_disp = user.get("email", "")
-    uid        = user.get("id","")
-
     st.markdown(f"""
     <div style="display:flex;align-items:center;gap:10px;padding:8px 4px 12px;">
       <div style="width:36px;height:36px;border-radius:50%;background:#e0e7ff;
                   display:flex;align-items:center;justify-content:center;
                   font-weight:700;color:#3730a3;font-size:0.9rem;flex-shrink:0;">
-        {name[0].upper() if name else "U"}
+        {name_disp[0].upper() if name_disp else "U"}
       </div>
       <div style="min-width:0;">
         <div style="font-weight:700;font-size:0.85rem;color:#0f172a;
-                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{name}</div>
+                    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{name_disp}</div>
         <div style="font-size:0.72rem;color:#64748b;
                     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{email_disp}</div>
       </div>
@@ -128,7 +170,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     if st.button("🚪  Logout", key="sidebar_logout", use_container_width=True):
-        _clear_login()
+        _logout()
         st.switch_page("app.py")
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -139,8 +181,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap');
 html,body,.stApp,[data-testid="stAppViewContainer"],
 section.main,[data-testid="stMain"]{
-  background:#f8fafc!important;
-  font-family:'DM Sans',sans-serif!important;color:#0f172a!important;}
+  background:#f8fafc!important;font-family:'DM Sans',sans-serif!important;color:#0f172a!important;}
 .block-container{padding-top:2rem!important;padding-bottom:2rem!important;max-width:1200px!important;}
 .stat-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;
   padding:20px;box-shadow:0 1px 3px rgba(0,0,0,0.04);text-align:center;}
@@ -185,8 +226,7 @@ section.main,[data-testid="stMain"]{
 div.stButton>button{
   background:#fff!important;color:#475569!important;border:1px solid #e2e8f0!important;
   border-radius:8px!important;font-weight:600!important;font-size:0.85rem!important;
-  font-family:'DM Sans',sans-serif!important;padding:6px 12px!important;
-  transition:all 0.15s ease!important;}
+  font-family:'DM Sans',sans-serif!important;padding:6px 12px!important;transition:all 0.15s!important;}
 div.stButton>button:hover{background:#f8fafc!important;border-color:#cbd5e1!important;}
 div.stButton>button[kind="primary"]{
   background:#2563EB!important;color:#fff!important;border-color:#2563EB!important;}
@@ -203,7 +243,6 @@ div[data-testid="stSelectbox"] div[data-baseweb="select"]>div{
 if "page" not in st.session_state:
     st.session_state.page = 0
 
-# ── Page header ────────────────────────────────────────────────────────────────
 first_name = user.get("name","").split()[0] if user.get("name") else "there"
 st.markdown(
     f"<h2 style='font-size:1.5rem;font-weight:700;color:#0f172a;margin-bottom:4px;'>Dashboard</h2>"
@@ -212,14 +251,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# ── Action buttons ─────────────────────────────────────────────────────────────
 b1, b2, b3 = st.columns([1.2, 1.8, 1.6])
-with b1:
-    sync_clicked = st.button("🔄 Sync Gmail", use_container_width=True, type="primary")
-with b2:
-    enrich_clicked = st.button("🔍 Find Missing Recruiters", use_container_width=True)
-with b3:
-    force_enrich = st.button("⚡ Force Re-Enrich ALL", use_container_width=True)
+with b1: sync_clicked   = st.button("🔄 Sync Gmail",             use_container_width=True, type="primary")
+with b2: enrich_clicked = st.button("🔍 Find Missing Recruiters", use_container_width=True)
+with b3: force_enrich   = st.button("⚡ Force Re-Enrich ALL",     use_container_width=True)
 
 st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
@@ -238,8 +273,7 @@ def _run_enrich_for(apps_list, label):
                             info.get("recruiter_email",""), info.get("recruiter_name",""),
                             info.get("recruiter_title",""), info.get("linkedin_url",""))
                 if info.get("recruiter_name") or info.get("recruiter_email") or info.get("linkedin_url"):
-                    found += 1
-                    st.write(f"✅ Found for **{company}**")
+                    found += 1; st.write(f"✅ Found for **{company}**")
                 else:
                     st.write(f"❌ Nothing found for **{company}**")
             status.update(label=f"✅ Done! {found}/{len(companies)} found.", state="complete")
@@ -268,10 +302,9 @@ if sync_clicked:
                         for app in parsed:
                             info = enriched.get(app["company_name"], {})
                             upsert_application(
-                                app["company_name"], app["job_title"], app["date"],
-                                app["subject"], info.get("recruiter_email",""),
-                                info.get("recruiter_name",""), info.get("recruiter_title",""),
-                                info.get("linkedin_url",""),
+                                app["company_name"], app["job_title"], app["date"], app["subject"],
+                                info.get("recruiter_email",""), info.get("recruiter_name",""),
+                                info.get("recruiter_title",""), info.get("linkedin_url",""),
                             )
                     status.update(label=f"✅ Done! {len(parsed)} applications saved.", state="complete")
                     st.session_state.page = 0
@@ -294,7 +327,7 @@ if force_enrich:
     if not all_apps: st.warning("No applications yet.")
     else: _run_enrich_for(all_apps, "⚡ Force Re-Enriching ALL")
 
-# ── Load data ──────────────────────────────────────────────────────────────────
+# ── Data ───────────────────────────────────────────────────────────────────────
 apps = get_all_applications()
 df   = pd.DataFrame(apps) if apps else pd.DataFrame(columns=[
     "id","company_name","position","stage","applied_date","last_updated",
@@ -304,7 +337,6 @@ for col in ["recruiter_email","recruiter_name","recruiter_title","linkedin_url"]
     df[col] = df[col].fillna("").astype(str)
 if "stage" not in df.columns: df["stage"] = "Applied"
 
-# ── Stats ──────────────────────────────────────────────────────────────────────
 total=len(df); applied=len(df[df.stage=="Applied"]) if not df.empty else 0
 interviews=len(df[df.stage=="Interview"]) if not df.empty else 0
 offers=len(df[df.stage=="Offer"]) if not df.empty else 0
@@ -322,7 +354,6 @@ for col,label,val,color in zip(cols,
 
 st.markdown("<div style='height:20px'></div>",unsafe_allow_html=True)
 
-# ── Filters ────────────────────────────────────────────────────────────────────
 f1,f2,f3=st.columns([3,1,1])
 with f1: search=st.text_input("🔍 Search",placeholder="Company or Job Title...")
 with f2: stage_f=st.selectbox("Stage",["All","Applied","Interview","Offer","Rejected"])
@@ -368,13 +399,10 @@ def build_table(rows_df):
         if rec_n and li:
             rc=(f'<span class="rec-name">👤 {rec_n}</span><span class="rec-title">{rec_t}</span>'
                 f'<a href="{li}" target="_blank" class="li-btn">🔗 LinkedIn</a>')
-        elif rec_n:
-            rc=f'<span class="rec-name">👤 {rec_n}</span><span class="rec-title">{rec_t}</span>'
-        elif li:
-            rc=f'<a href="{li}" target="_blank" class="li-btn">🔗 LinkedIn</a>'
-        else:
-            rc='<span class="no-data">Not found</span>'
-        ec=(f'<span class="email-txt">{em}</span>' if em else '<span class="no-data">—</span>')
+        elif rec_n: rc=f'<span class="rec-name">👤 {rec_n}</span><span class="rec-title">{rec_t}</span>'
+        elif li: rc=f'<a href="{li}" target="_blank" class="li-btn">🔗 LinkedIn</a>'
+        else: rc='<span class="no-data">Not found</span>'
+        ec=f'<span class="email-txt">{em}</span>' if em else '<span class="no-data">—</span>'
         rows+=(f'<tr><td><div style="display:flex;align-items:center;gap:10px;">'
                f'<div class="co-logo">{let}</div><span class="co-name">{r["company_name"]}</span>'
                f'</div></td><td><span class="job-role">{r["position"]}</span></td>'
@@ -395,29 +423,21 @@ def build_credits():
         svc=CREDIT_SERVICES.get(key,{}); entry=state.get(key,{})
         tot=svc.get("total",100); used=entry.get("used",0)
         pct=max(2,int((used/tot)*100)) if tot>0 else 2
-        items+=(f'<div style="margin-bottom:16px;">'
-                f'<div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
+        items+=(f'<div style="margin-bottom:16px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;">'
                 f'<div><div style="font-size:.875rem;font-weight:700;color:#0f172a;">{name}</div>'
                 f'<div style="font-size:.72rem;color:#94a3b8;">{sub}</div></div>'
                 f'<span style="font-size:.78rem;font-weight:700;">{used:,}/{tot:,}</span></div>'
-                f'<div class="credit-bar-bg"><div class="credit-bar-fill" '
-                f'style="background:{color};width:{pct}%;"></div></div></div>')
-    return (f'<div class="credit-wrap">'
-            f'<div style="font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:16px;">Credit Usage</div>'
-            f'{items}'
-            f'<div style="height:1px;background:#f1f5f9;margin:12px 0;"></div>'
+                f'<div class="credit-bar-bg"><div class="credit-bar-fill" style="background:{color};width:{pct}%;"></div></div></div>')
+    return (f'<div class="credit-wrap"><div style="font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:16px;">Credit Usage</div>'
+            f'{items}<div style="height:1px;background:#f1f5f9;margin:12px 0;"></div>'
             f'<button style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;'
-            f'background:#fff;font-size:.875rem;font-weight:700;color:#0f172a;">Upgrade Plan</button>'
-            f'</div>'
+            f'background:#fff;font-size:.875rem;font-weight:700;color:#0f172a;">Upgrade Plan</button></div>'
             f'<div class="pro-tip"><span style="font-size:1.2rem;">💡</span>'
             f'<div><div style="font-size:.875rem;font-weight:700;color:#0f172a;margin-bottom:4px;">Pro Tip</div>'
             f'<div style="font-size:.8rem;color:#475569;line-height:1.55;">'
-            f'Syncing your Gmail daily improves response tracking accuracy by up to 45%.'
-            f'</div></div></div>')
+            f'Syncing your Gmail daily improves response tracking accuracy by up to 45%.</div></div></div>')
 
-# ── Two-column layout ──────────────────────────────────────────────────────────
 cl,cr=st.columns([2,1],gap="large")
-
 with cl:
     st.markdown(f"<h3 style='font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:12px;'>"
                 f"📋 Applications <span style='color:#94a3b8;font-weight:400;'>({total_rows})</span></h3>",
@@ -465,7 +485,7 @@ if not page_df.empty:
                 "company":str(r["company_name"]),"position":str(r["position"]),
                 "rec_name":str(r.get("recruiter_name","")).strip(),"email":em})
 if not rows_for_email:
-    st.info("💡 No recruiters with emails on this page yet. Sync emails or find recruiters first.",icon="ℹ️")
+    st.info("💡 No recruiters with emails on this page yet.",icon="ℹ️")
 else:
     ce1,ce2,ce3=st.columns([2.5,1.5,1])
     with ce1:
@@ -479,9 +499,9 @@ else:
         greet=f"Hi {sel_rec['rec_name'].split()[0]}," if sel_rec["rec_name"] else "Hi,"
         prompt=(f"Write a {tone.lower()} cold follow-up email from a job seeker "
                 f"to a recruiter at {sel_rec['company']} about the {sel_rec['position']} role.\n"
-                f"Opening: {greet}\nStrict rules:\n- Max 130 words\n- First line: Subject: <subject>\n"
-                f"- Then blank line\n- Body starting with {greet}\n- No brackets\n"
-                f"- Close with: Best regards,\n- Tone: {tone.lower()}")
+                f"Opening: {greet}\nRules:\n- Max 130 words\n- First line: Subject: <subject>\n"
+                f"- Blank line then body starting with {greet}\n- No brackets\n"
+                f"- Close: Best regards,\n- Tone: {tone.lower()}")
         with st.spinner("✨ Writing..."):
             try:
                 import requests as _req
@@ -507,7 +527,7 @@ else:
         body_e=st.text_area("Body",value=st.session_state.get("ai_email_body",""),height=200,key="ai_body_field")
         ca,cb,_=st.columns([1.2,1.4,3])
         with ca:
-            if st.button("📋 Copy",key="copy_btn"): st.success("Use Ctrl+A in the body field!",icon="✅")
+            if st.button("📋 Copy",key="copy_btn"): st.success("Use Ctrl+A!",icon="✅")
         with cb:
             to=st.session_state.get("ai_email_to","")
             mailto=(f"mailto:{to}?subject={subj_e.replace(' ','%20')}"
@@ -548,7 +568,7 @@ with tab2:
                         update_recruiter_info(app_id2,info.get("recruiter_email",""),
                             info.get("recruiter_name",""),info.get("recruiter_title",""),info.get("linkedin_url",""))
                         if info.get("recruiter_name") or info.get("linkedin_url"):
-                            s2.update(label=f"✅ Found!",state="complete")
+                            s2.update(label="✅ Found!",state="complete")
                             st.success(f"**{info.get('recruiter_name','—')}**")
                         else:
                             s2.update(label="No result",state="error")
