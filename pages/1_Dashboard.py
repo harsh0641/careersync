@@ -1,7 +1,7 @@
 """
 pages/1_Dashboard.py — CareerSync Dashboard
-Persistent login via ?uid= query param.
-Logout clears session + URL so user lands on clean home page.
+- Refresh: stays logged in on same page
+- Logout: goes to clean home URL with no uid param
 """
 
 import os, sys, math
@@ -20,15 +20,11 @@ st.set_page_config(
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
-# PERSISTENT LOGIN
+# PERSISTENT LOGIN — survives refresh via ?uid= in URL
 # ══════════════════════════════════════════════════════════════════════════════
 def _restore():
-    """Restore session from ?uid= — skip if user explicitly logged out."""
     if st.session_state.get("user"):
         return True
-    # Don't auto-restore if user just logged out
-    if st.session_state.get("logged_out"):
-        return False
     uid = st.query_params.get("uid", "")
     if uid:
         user = get_user_by_id(uid)
@@ -39,27 +35,27 @@ def _restore():
     return False
 
 def _logout():
-    st.session_state["logged_out"] = True
-    for k in ["user", "user_id"]:
+    # Clear session completely
+    for k in ["user", "user_id", "logged_out"]:
         st.session_state.pop(k, None)
+    # Clear uid from URL and redirect browser to clean home URL
     st.query_params.clear()
-    st.markdown(
-        '<meta http-equiv="refresh" content="0; url=/">',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <script>
+        window.location.href = "/";
+    </script>
+    """, unsafe_allow_html=True)
     st.stop()
 
 if not _restore():
+    # No session, no uid in URL — send to home
     st.query_params.clear()
-    st.markdown(
-        '<meta http-equiv="refresh" content="0; url=/">',
-        unsafe_allow_html=True
-    )
+    st.switch_page("app.py")
     st.stop()
 
 user = st.session_state["user"]
 
-# Keep ?uid= fresh in URL on every dashboard load (survives refresh)
+# Always keep ?uid= in URL so refresh works
 st.query_params["uid"] = user["id"]
 inject_gmail_env(user)
 
@@ -145,7 +141,6 @@ with st.sidebar:
 
     if st.button("🚪  Logout", key="sidebar_logout", use_container_width=True):
         _logout()
-        st.stop()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # GLOBAL CSS
