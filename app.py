@@ -1,7 +1,8 @@
 """
 app.py — CareerSync Landing + Login + Register
-Landing page matches exact HTML UI design reference.
-Persistent login via st.query_params ?uid=
+Landing page matches exact HTML UI design.
+Buttons work via window.top.location.href redirect.
+No extra Streamlit buttons below the iframe.
 """
 
 import os, sys
@@ -44,6 +45,18 @@ def _set_login(user: dict):
 
 _restore_session()
 
+# Handle action from iframe button clicks
+action = st.query_params.get("action", "")
+if action == "login":
+    st.query_params.clear()
+    st.session_state.auth_view = "login"
+    st.rerun()
+elif action == "signup":
+    st.query_params.clear()
+    st.session_state.auth_view = "register"
+    st.rerun()
+
+# Redirect if already logged in
 if st.session_state.get("user"):
     st.switch_page("pages/1_Dashboard.py")
     st.stop()
@@ -64,7 +77,7 @@ section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LANDING PAGE — exact HTML design
+# LANDING PAGE — exact HTML design, all buttons clickable
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.auth_view == "landing":
 
@@ -144,7 +157,7 @@ tailwind.config = {
           <input class="w-full pl-12 pr-4 py-4 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-primary focus:border-primary transition-all shadow-sm outline-none" placeholder="Enter your work email" type="email" id="hero-email"/>
         </div>
       </label>
-      <button id="btn-start" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/20">
+      <button id="btn-start" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/20 cursor-pointer">
         Start Tracking
       </button>
     </div>
@@ -278,10 +291,10 @@ tailwind.config = {
     Stop manually updating spreadsheets. Let CareerSync handle the tracking while you focus on the interview.
   </p>
   <div class="flex flex-col sm:flex-row justify-center gap-4">
-    <button id="btn-getstarted" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/25">
+    <button id="btn-getstarted" class="bg-primary hover:bg-primary/90 text-white px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg shadow-primary/25 cursor-pointer">
       Get Started for Free
     </button>
-    <button id="btn-demo" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg border border-slate-200 hover:bg-slate-50 transition-all">
+    <button id="btn-demo" class="bg-white text-slate-900 px-8 py-4 rounded-xl font-bold text-lg border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer">
       View Demo
     </button>
   </div>
@@ -308,9 +321,9 @@ tailwind.config = {
     <div>
       <h4 class="font-bold text-slate-900 mb-6">Product</h4>
       <ul class="flex flex-col gap-4 text-slate-500 text-sm">
-        <li><a class="hover:text-primary transition-colors" href="#">Features</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Pricing</a></li>
-        <li><a class="hover:text-primary transition-colors" href="#">Integrations</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#features">Features</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#pricing">Pricing</a></li>
+        <li><a class="hover:text-primary transition-colors" href="#how-it-works">Integrations</a></li>
         <li><a class="hover:text-primary transition-colors" href="#">Updates</a></li>
       </ul>
     </div>
@@ -343,47 +356,25 @@ tailwind.config = {
 </footer>
 
 <script>
-function goLogin()  { window.parent.postMessage({cs_action:"login"},  "*"); }
-function goSignup() { window.parent.postMessage({cs_action:"signup"}, "*"); }
+// Use window.top.location.href to change the parent Streamlit URL
+function goLogin()  {
+    window.top.location.href = window.top.location.pathname + '?action=login';
+}
+function goSignup() {
+    window.top.location.href = window.top.location.pathname + '?action=signup';
+}
 
-document.getElementById("nav-login")?.addEventListener("click",    function(e){e.preventDefault();goLogin();});
-document.getElementById("nav-signup")?.addEventListener("click",   goSignup);
-document.getElementById("mob-login")?.addEventListener("click",    goLogin);
-document.getElementById("mob-signup")?.addEventListener("click",   goSignup);
-document.getElementById("btn-start")?.addEventListener("click",    goSignup);
-document.getElementById("btn-getstarted")?.addEventListener("click",goSignup);
-document.getElementById("btn-demo")?.addEventListener("click",     goLogin);
+document.getElementById("nav-login")?.addEventListener("click",      function(e){e.preventDefault();goLogin();});
+document.getElementById("nav-signup")?.addEventListener("click",     goSignup);
+document.getElementById("mob-login")?.addEventListener("click",      goLogin);
+document.getElementById("mob-signup")?.addEventListener("click",     goSignup);
+document.getElementById("btn-start")?.addEventListener("click",      goSignup);
+document.getElementById("btn-getstarted")?.addEventListener("click", goSignup);
+document.getElementById("btn-demo")?.addEventListener("click",       goLogin);
 </script>
 </body></html>"""
 
-    # Render the full HTML landing page
     components.html(LANDING_HTML, height=3400, scrolling=True)
-
-    # Listen for postMessage from iframe buttons
-    # Also provide Streamlit fallback buttons below (hidden visually but functional)
-    st.markdown("""
-    <style>
-    .landing-btns{display:flex;gap:12px;justify-content:center;padding:16px 0 8px;background:#f6f6f8;}
-    div[data-testid="column"] div.stButton>button{
-      border-radius:10px!important;font-weight:700!important;
-      font-family:'DM Sans',sans-serif!important;
-      font-size:0.95rem!important;padding:12px 28px!important;}
-    div[data-testid="column"]:nth-child(1) div.stButton>button{
-      background:#2563EB!important;color:#fff!important;border:none!important;
-      box-shadow:0 4px 14px rgba(37,99,235,.3)!important;}
-    div[data-testid="column"]:nth-child(2) div.stButton>button{
-      background:#fff!important;color:#0f172a!important;
-      border:1.5px solid #e2e8f0!important;}
-    </style>
-    """, unsafe_allow_html=True)
-
-    _, c1, c2, _ = st.columns([2, 1.5, 1.5, 2])
-    with c1:
-        if st.button("🚀 Get Started Free", key="land_signup", use_container_width=True):
-            st.session_state.auth_view = "register"; st.rerun()
-    with c2:
-        if st.button("Log In", key="land_login", use_container_width=True):
-            st.session_state.auth_view = "login"; st.rerun()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
