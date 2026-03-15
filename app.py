@@ -1,8 +1,8 @@
 """
 app.py — CareerSync Landing + Login + Register
-Landing page matches exact HTML UI design.
-Buttons work via window.top.location.href redirect.
-No extra Streamlit buttons below the iframe.
+Landing page exact HTML design.
+Buttons work via window.open(_top) — works in sandboxed iframes.
+No extra buttons at bottom.
 """
 
 import os, sys
@@ -77,7 +77,7 @@ section.main,[data-testid="stMain"]{background:#f6f6f8!important;}
 """, unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
-# LANDING PAGE — exact HTML design, all buttons clickable
+# LANDING PAGE
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.auth_view == "landing":
 
@@ -356,13 +356,8 @@ tailwind.config = {
 </footer>
 
 <script>
-// Use window.top.location.href to change the parent Streamlit URL
-function goLogin()  {
-    window.top.location.href = window.top.location.pathname + '?action=login';
-}
-function goSignup() {
-    window.top.location.href = window.top.location.pathname + '?action=signup';
-}
+function goLogin()  { window.open("?action=login",  "_top"); }
+function goSignup() { window.open("?action=signup", "_top"); }
 
 document.getElementById("nav-login")?.addEventListener("click",      function(e){e.preventDefault();goLogin();});
 document.getElementById("nav-signup")?.addEventListener("click",     goSignup);
