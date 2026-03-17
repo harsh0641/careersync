@@ -5,7 +5,7 @@ pages/2_Applications.py — CareerSync Job Application Portal
 - AI summaries: Groq llama-3.1-8b-instant
 """
 
-import os, sys, time, requests
+import os, sys, requests
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
 import streamlit as st
@@ -60,7 +60,7 @@ try:
 except Exception:
     _sb = None
 
-APIFY_KEY = os.environ.get("APIFY_API_KEY", st.secrets.get("APIFY_API_KEY", ""))
+
 
 # ══════════════════════════════════════════════════════════════════════════════
 # SIDEBAR  (same style as Dashboard)
@@ -229,13 +229,13 @@ def _groq_summarise(title: str, description: str) -> str:
 def _fetch_linkedin_jobs(keyword: str, location: str, company: str,
                          date_filter: str) -> tuple[list[dict], str]:
     """
-    Fetch LinkedIn jobs via Apify actor: bebity/linkedin-jobs-scraper
-    Uses async run + polling so it never times out.
+    Fetch LinkedIn jobs via LinkedIn's FREE public guest API.
+    No Apify, no API key — uses LinkedIn's own public job search endpoint.
     Returns (jobs_list, error_message).
     Results are session-only — NOT stored in DB.
     """
-    if not APIFY_KEY:
-        return [], "Apify API key not configured. Add APIFY_API_KEY to Streamlit secrets."
+    from bs4 import BeautifulSoup
+    import re
 
     # Map date filter → LinkedIn f_TPR value
     date_map = {
@@ -251,89 +251,140 @@ def _fetch_linkedin_jobs(keyword: str, location: str, company: str,
     if company.strip():
         search_kw = f"{search_kw} {company.strip()}".strip()
     if not search_kw:
-        search_kw = "software engineer"
+        return [], "Please enter a job title or keyword."
 
-    # ── Actor: bebity/linkedin-jobs-scraper ─────────────────────────────────
-    # Correct input schema for this actor
-    actor_input = {
-        "title":    search_kw,
-        "location": location.strip() or "",
-        "rows":     20,
-        "proxy": {
-            "useApifyProxy": True,
-            "apifyProxyGroups": ["RESIDENTIAL"],
-        },
+    # LinkedIn guest job search endpoint (public, no auth)
+    SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search"
+    DETAIL_URL = "https://www.linkedin.com/jobs-guest/jobs/api/jobPosting/{job_id}"
+
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
+    params = {
+        "keywords": search_kw,
+        "location": location.strip(),
+        "start":    0,
+        "count":    25,
     }
     if f_tpr:
-        actor_input["publishedAt"] = f_tpr
+        params["f_TPR"] = f_tpr
 
-    ACTOR_ID = "bebity~linkedin-jobs-scraper"
-    BASE     = "https://api.apify.com/v2"
-    HEADERS  = {"Content-Type": "application/json"}
-    PARAMS   = {"token": APIFY_KEY}
-
-    # ── Step 1: Start the run (async) ────────────────────────────────────────
+    # ── Step 1: Search for job listings ─────────────────────────────────────
     try:
-        start_resp = requests.post(
-            f"{BASE}/acts/{ACTOR_ID}/runs",
-            json=actor_input,
-            params={**PARAMS, "memory": 512, "timeout": 120},
-            headers=HEADERS,
-            timeout=30,
-        )
+        resp = requests.get(SEARCH_URL, params=params, headers=headers, timeout=20)
     except requests.exceptions.ConnectionError:
-        return [], "Network error — cannot reach Apify. Check your connection."
+        return [], "Network error — cannot reach LinkedIn. Check connection."
     except requests.exceptions.Timeout:
-        return [], "Request timed out starting the job scraper."
+        return [], "LinkedIn took too long to respond. Try again."
 
-    if start_resp.status_code not in (200, 201):
+    if resp.status_code == 429:
+        return [], "LinkedIn rate limit hit. Wait 30 seconds and try again."
+    if resp.status_code != 200:
+        return [], f"LinkedIn returned status {resp.status_code}. Try again."
+
+    # ── Step 2: Parse job cards from HTML ────────────────────────────────────
+    soup = BeautifulSoup(resp.text, "html.parser")
+    job_cards = soup.find_all("li")
+
+    jobs = []
+    for card in job_cards[:20]:  # cap at 20
         try:
-            err = start_resp.json().get("error", {}).get("message", start_resp.text[:200])
+            # Job ID
+            entity = card.find("div", {"data-entity-urn": True})
+            job_id = ""
+            if entity:
+                urn = entity.get("data-entity-urn", "")
+                job_id = urn.split(":")[-1]
+
+            # Fallback: extract from link
+            if not job_id:
+                link_tag = card.find("a", href=re.compile(r"/jobs/view/(\d+)"))
+                if link_tag:
+                    m = re.search(r"/jobs/view/(\d+)", link_tag["href"])
+                    if m:
+                        job_id = m.group(1)
+
+            if not job_id:
+                continue
+
+            # Title
+            title_tag = (card.find("h3", class_=re.compile("base-search-card__title")) or
+                         card.find("h3") or card.find("span", class_=re.compile("title")))
+            title = title_tag.get_text(strip=True) if title_tag else "Unknown Role"
+
+            # Company
+            company_tag = (card.find("h4", class_=re.compile("base-search-card__subtitle")) or
+                           card.find("a", class_=re.compile("hidden-nested-link")) or
+                           card.find("h4"))
+            company_name = company_tag.get_text(strip=True) if company_tag else "Unknown Company"
+
+            # Location
+            loc_tag = card.find("span", class_=re.compile("job-search-card__location"))
+            location_val = loc_tag.get_text(strip=True) if loc_tag else ""
+
+            # Posted date
+            time_tag = card.find("time")
+            posted = time_tag.get("datetime", "") if time_tag else ""
+
+            # Job URL
+            link = card.find("a", href=re.compile(r"linkedin\.com/jobs"))
+            job_url = link["href"].split("?")[0] if link else f"https://www.linkedin.com/jobs/view/{job_id}"
+
+            jobs.append({
+                "id":          job_id,
+                "title":       title,
+                "company":     company_name,
+                "location":    location_val,
+                "posted":      posted,
+                "url":         job_url,
+                "description": "",   # fetched in step 3
+                "salary":      "",
+                "views":       "",
+            })
         except Exception:
-            err = start_resp.text[:200]
-        return [], f"Apify error {start_resp.status_code}: {err}"
-
-    run_data = start_resp.json().get("data", {})
-    run_id   = run_data.get("id", "")
-    if not run_id:
-        return [], "Apify did not return a run ID. Try again."
-
-    # ── Step 2: Poll until SUCCEEDED or FAILED (max 120s) ───────────────────
-    poll_url = f"{BASE}/actor-runs/{run_id}"
-    deadline  = time.time() + 120
-    status    = "RUNNING"
-
-    while time.time() < deadline:
-        try:
-            poll = requests.get(poll_url, params=PARAMS, timeout=15)
-            status = poll.json().get("data", {}).get("status", "RUNNING")
-        except Exception:
-            time.sleep(5)
             continue
 
-        if status == "SUCCEEDED":
-            break
-        if status in ("FAILED", "ABORTED", "TIMED-OUT"):
-            return [], f"Scraper run {status}. LinkedIn may be blocking — try again."
-        time.sleep(5)  # poll every 5s
-    else:
-        return [], "Scraper timed out after 120s. LinkedIn was slow — try again."
+    if not jobs:
+        return [], "No jobs found. Try a broader keyword or different location."
 
-    # ── Step 3: Fetch dataset items ──────────────────────────────────────────
-    dataset_id = poll.json().get("data", {}).get("defaultDatasetId", "")
-    if not dataset_id:
-        return [], "No dataset returned from scraper run."
+    # ── Step 3: Fetch descriptions for top 10 jobs ───────────────────────────
+    for job in jobs[:10]:
+        try:
+            det = requests.get(
+                DETAIL_URL.format(job_id=job["id"]),
+                headers=headers, timeout=10
+            )
+            if det.status_code == 200:
+                dsoup = BeautifulSoup(det.text, "html.parser")
 
-    try:
-        data_resp = requests.get(
-            f"{BASE}/datasets/{dataset_id}/items",
-            params={**PARAMS, "format": "json", "clean": "true"},
-            timeout=30,
-        )
-        items = data_resp.json() if data_resp.status_code == 200 else []
-        return items, ""
-    except Exception as e:
-        return [], f"Failed to fetch results: {e}"
+                # Description
+                desc_tag = (dsoup.find("div", class_=re.compile("description__text")) or
+                            dsoup.find("div", class_=re.compile("show-more-less-html")) or
+                            dsoup.find("section", class_=re.compile("description")))
+                if desc_tag:
+                    job["description"] = desc_tag.get_text(separator=" ", strip=True)[:3000]
+
+                # Salary (if listed)
+                salary_tag = dsoup.find("span", class_=re.compile("compensation"))
+                if salary_tag:
+                    job["salary"] = salary_tag.get_text(strip=True)
+
+                # Applicants / views
+                views_tag = dsoup.find("span", class_=re.compile("num-applicants|applicant"))
+                if views_tag:
+                    job["views"] = views_tag.get_text(strip=True)
+
+        except Exception:
+            pass  # description fetch is best-effort
+
+    return jobs, ""
 
 
 def _save_applied_job(job: dict):
