@@ -227,15 +227,17 @@ def _groq_summarise(title: str, description: str) -> str:
 
 
 def _fetch_linkedin_jobs(keyword: str, location: str, company: str,
-                         date_filter: str) -> list[dict]:
+                         date_filter: str) -> tuple[list[dict], str]:
     """
-    Fetch LinkedIn jobs via Apify actor: curious_coder/linkedin-jobs-scraper
-    Returns list of job dicts. Results are session-only — NOT stored in DB.
+    Fetch LinkedIn jobs via Apify actor: bebity/linkedin-jobs-scraper
+    Uses async run + polling so it never times out.
+    Returns (jobs_list, error_message).
+    Results are session-only — NOT stored in DB.
     """
     if not APIFY_KEY:
-        return []
+        return [], "Apify API key not configured. Add APIFY_API_KEY to Streamlit secrets."
 
-    # Map date filter to LinkedIn's posting-date parameter
+    # Map date filter → LinkedIn f_TPR value
     date_map = {
         "Any time":      "",
         "Last 24 hours": "r86400",
@@ -244,32 +246,94 @@ def _fetch_linkedin_jobs(keyword: str, location: str, company: str,
     }
     f_tpr = date_map.get(date_filter, "")
 
-    # Build search keyword combining role + company if given
+    # Build search keyword
     search_kw = keyword.strip()
     if company.strip():
         search_kw = f"{search_kw} {company.strip()}".strip()
+    if not search_kw:
+        search_kw = "software engineer"
 
+    # ── Actor: bebity/linkedin-jobs-scraper ─────────────────────────────────
+    # Correct input schema for this actor
     actor_input = {
-        "queries": search_kw or "software engineer",
+        "title":    search_kw,
         "location": location.strip() or "",
-        "count": 20,
-        "proxy": {"useApifyProxy": True},
+        "rows":     20,
+        "proxy": {
+            "useApifyProxy": True,
+            "apifyProxyGroups": ["RESIDENTIAL"],
+        },
     }
     if f_tpr:
-        actor_input["f_TPR"] = f_tpr
+        actor_input["publishedAt"] = f_tpr
 
-    # Run actor synchronously (wait for finish)
-    ACTOR_ID = "curious_coder/linkedin-jobs-scraper"
-    url = f"https://api.apify.com/v2/acts/{ACTOR_ID}/run-sync-get-dataset-items"
-    params = {"token": APIFY_KEY, "timeout": 60, "memory": 256}
+    ACTOR_ID = "bebity~linkedin-jobs-scraper"
+    BASE     = "https://api.apify.com/v2"
+    HEADERS  = {"Content-Type": "application/json"}
+    PARAMS   = {"token": APIFY_KEY}
+
+    # ── Step 1: Start the run (async) ────────────────────────────────────────
+    try:
+        start_resp = requests.post(
+            f"{BASE}/acts/{ACTOR_ID}/runs",
+            json=actor_input,
+            params={**PARAMS, "memory": 512, "timeout": 120},
+            headers=HEADERS,
+            timeout=30,
+        )
+    except requests.exceptions.ConnectionError:
+        return [], "Network error — cannot reach Apify. Check your connection."
+    except requests.exceptions.Timeout:
+        return [], "Request timed out starting the job scraper."
+
+    if start_resp.status_code not in (200, 201):
+        try:
+            err = start_resp.json().get("error", {}).get("message", start_resp.text[:200])
+        except Exception:
+            err = start_resp.text[:200]
+        return [], f"Apify error {start_resp.status_code}: {err}"
+
+    run_data = start_resp.json().get("data", {})
+    run_id   = run_data.get("id", "")
+    if not run_id:
+        return [], "Apify did not return a run ID. Try again."
+
+    # ── Step 2: Poll until SUCCEEDED or FAILED (max 120s) ───────────────────
+    poll_url = f"{BASE}/actor-runs/{run_id}"
+    deadline  = time.time() + 120
+    status    = "RUNNING"
+
+    while time.time() < deadline:
+        try:
+            poll = requests.get(poll_url, params=PARAMS, timeout=15)
+            status = poll.json().get("data", {}).get("status", "RUNNING")
+        except Exception:
+            time.sleep(5)
+            continue
+
+        if status == "SUCCEEDED":
+            break
+        if status in ("FAILED", "ABORTED", "TIMED-OUT"):
+            return [], f"Scraper run {status}. LinkedIn may be blocking — try again."
+        time.sleep(5)  # poll every 5s
+    else:
+        return [], "Scraper timed out after 120s. LinkedIn was slow — try again."
+
+    # ── Step 3: Fetch dataset items ──────────────────────────────────────────
+    dataset_id = poll.json().get("data", {}).get("defaultDatasetId", "")
+    if not dataset_id:
+        return [], "No dataset returned from scraper run."
 
     try:
-        resp = requests.post(url, json=actor_input, params=params, timeout=90)
-        if resp.status_code == 200:
-            return resp.json() or []
-        return []
-    except Exception:
-        return []
+        data_resp = requests.get(
+            f"{BASE}/datasets/{dataset_id}/items",
+            params={**PARAMS, "format": "json", "clean": "true"},
+            timeout=30,
+        )
+        items = data_resp.json() if data_resp.status_code == 200 else []
+        return items, ""
+    except Exception as e:
+        return [], f"Failed to fetch results: {e}"
 
 
 def _save_applied_job(job: dict):
@@ -309,18 +373,40 @@ def _load_applied_jobs() -> list[dict]:
 
 
 def _normalise(raw: dict) -> dict:
-    """Normalise Apify result fields to a consistent shape."""
+    """Normalise bebity/linkedin-jobs-scraper result fields to a consistent shape."""
+    # bebity fields: title, companyName, location, salary, description, jobUrl, publishedAt
+    # Also handle variations from other actors
+    desc = (raw.get("description") or
+            raw.get("descriptionText") or
+            raw.get("jobDescription") or "")
+
+    company = (raw.get("companyName") or
+               raw.get("company") or
+               raw.get("company_name") or "Unknown Company")
+
+    url = (raw.get("jobUrl") or
+           raw.get("url") or
+           raw.get("applyUrl") or "#")
+
+    # Generate a stable ID from URL or title+company
+    job_id = (raw.get("id") or
+              raw.get("jobId") or
+              str(abs(hash(url + raw.get("title","")))))
+
     return {
-        "id":          raw.get("id", raw.get("jobId", str(hash(raw.get("jobUrl","") + raw.get("title",""))))),
+        "id":          str(job_id),
         "title":       raw.get("title", "Unknown Role"),
-        "company":     raw.get("companyName", raw.get("company", "Unknown Company")),
+        "company":     company,
         "location":    raw.get("location", ""),
-        "salary":      raw.get("salary", raw.get("salaryRange", "")),
-        "description": raw.get("description", raw.get("descriptionText", "")),
-        "requirements":raw.get("requirements", ""),
-        "url":         raw.get("jobUrl", raw.get("url", "#")),
-        "posted":      raw.get("postedAt", raw.get("publishedAt", "")),
-        "views":       raw.get("views", raw.get("applicantsCount", "")),
+        "salary":      (raw.get("salary") or raw.get("salaryRange") or
+                        raw.get("salary_range") or ""),
+        "description": desc,
+        "requirements":raw.get("requirements") or raw.get("jobRequirements") or "",
+        "url":         url,
+        "posted":      (raw.get("publishedAt") or raw.get("postedAt") or
+                        raw.get("posted_date") or ""),
+        "views":       (raw.get("views") or raw.get("applicantsCount") or
+                        raw.get("numApplicants") or ""),
     }
 
 
@@ -390,18 +476,33 @@ if st.session_state.app_view == "browse":
     if search_clicked:
         if not kw.strip() and not company_q.strip():
             st.warning("Please enter a job title or company name.")
-        elif not APIFY_KEY:
-            st.error("❌ Apify API key not configured. Check Streamlit secrets.")
         else:
-            with st.spinner("🔎 Fetching live LinkedIn jobs…"):
-                raw_results = _fetch_linkedin_jobs(kw, location_q, company_q, date_f)
-                if raw_results:
-                    st.session_state.job_results  = [_normalise(r) for r in raw_results]
-                    st.session_state.ai_summaries = {}  # clear old summaries
-                    st.success(f"✅ Found {len(st.session_state.job_results)} jobs!")
-                else:
+            with st.status("🔎 Fetching live LinkedIn jobs via Apify…", expanded=True) as status:
+                st.write("⏳ Starting LinkedIn scraper…")
+                raw_results, err = _fetch_linkedin_jobs(kw, location_q, company_q, date_f)
+
+                if err:
+                    status.update(label=f"❌ {err}", state="error")
                     st.session_state.job_results = []
-                    st.warning("No jobs found. Try a different keyword or location.")
+                elif not raw_results:
+                    status.update(label="No jobs found for this search.", state="error")
+                    st.session_state.job_results = []
+                    st.warning("No jobs found. Try a broader keyword or different location.")
+                else:
+                    st.write(f"✅ Scraped {len(raw_results)} jobs from LinkedIn!")
+                    st.write("✨ Generating AI summaries with Groq…")
+                    jobs_norm = [_normalise(r) for r in raw_results]
+                    # Pre-generate all AI summaries during load
+                    summaries = {}
+                    for j in jobs_norm:
+                        jid = str(j["id"])
+                        summaries[jid] = _groq_summarise(j["title"], j["description"])
+                    st.session_state.job_results   = jobs_norm
+                    st.session_state.ai_summaries  = summaries
+                    status.update(
+                        label=f"✅ Found {len(jobs_norm)} jobs with AI summaries!",
+                        state="complete"
+                    )
 
     # ── Results ─────────────────────────────────────────────────────────────
     jobs = st.session_state.get("job_results", [])
@@ -426,14 +527,12 @@ if st.session_state.app_view == "browse":
             jid = str(job["id"])
             already_applied = jid in st.session_state.applied_jobs
 
-            # Lazy-load AI summary
-            if jid not in st.session_state.ai_summaries and job["description"]:
-                with st.spinner(f"✨ Summarising {job['title']}…"):
-                    st.session_state.ai_summaries[jid] = _groq_summarise(
-                        job["title"], job["description"]
-                    )
-
-            summary = st.session_state.ai_summaries.get(jid, job["description"][:200])
+            # Summaries pre-generated at search time; fallback to truncated description
+            summary = st.session_state.ai_summaries.get(
+                jid,
+                job["description"][:200] + "…" if len(job.get("description","")) > 200
+                else job.get("description","")
+            )
             salary  = job.get("salary", "")
             views   = job.get("views", "")
             posted  = job.get("posted", "")
