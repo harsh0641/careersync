@@ -712,27 +712,43 @@ if st.session_state.app_view == "browse":
             # ── Card + Action columns ────────────────────────────────────────
             col_card, col_action = st.columns([8, 2], gap="medium")
 
+            # Build HTML blocks before f-string to avoid ternary rendering bug
+            reqs_html = ""
+            if ai_reqs:
+                reqs_clean = ai_reqs.replace("•", "<br>•").lstrip("<br>")
+                reqs_html = (
+                    '<div class="card-divider"></div>'
+                    '<div class="section-label">Key Requirements &amp; Qualifications</div>'
+                    f'<div class="section-req">{reqs_clean}</div>'
+                )
+
+            fulldesc_html = ""
+            if desc_full and desc_full.strip() != summary.strip():
+                preview = desc_full[:600] + ("…" if len(desc_full) > 600 else "")
+                fulldesc_html = (
+                    '<div class="card-divider"></div>'
+                    '<div class="section-label">Full Description</div>'
+                    f'<div class="section-text" style="font-size:0.82rem;color:#64748b;">{preview}</div>'
+                )
+
             with col_card:
-                st.markdown(f"""
-                <div class="job-card">
-                  <div class="job-card-company">
-                    <span style="font-family:'Material Symbols Outlined';font-size:14px;
-                                 font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
-                                 line-height:1;color:#2563EB;">business</span>
-                    {job['company']}
-                  </div>
-                  <div class="job-card-title">{job['title']}</div>
-                  <div class="job-card-meta">{meta_html}</div>
-                  <div class="pill-row">{pills_html}</div>
-
-                  <div class="section-label">AI Summary</div>
-                  <div class="section-text">{summary}</div>
-
-                  {'<div class="card-divider"></div><div class="section-label">Key Requirements & Qualifications</div><div class="section-req">' + ai_reqs.replace("•","<br>•").lstrip("<br>") + "</div>" if ai_reqs else ""}
-
-                  {'<div class="card-divider"></div><div class="section-label">Full Description</div><div class="section-text" style="font-size:0.82rem;color:#64748b;">' + desc_full[:600] + ("…" if len(desc_full)>600 else "") + "</div>" if desc_full and desc_full != summary else ""}
-                </div>
-                """, unsafe_allow_html=True)
+                st.markdown(
+                    f'<div class="job-card">'
+                    f'<div class="job-card-company">'
+                    f'<span style="font-family:\'Material Symbols Outlined\';font-size:14px;'
+                    f'font-variation-settings:\'FILL\' 0,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24;'
+                    f'line-height:1;color:#2563EB;">business</span>'
+                    f'{job["company"]}</div>'
+                    f'<div class="job-card-title">{job["title"]}</div>'
+                    f'<div class="job-card-meta">{meta_html}</div>'
+                    f'<div class="pill-row">{pills_html}</div>'
+                    f'<div class="section-label">AI Summary</div>'
+                    f'<div class="section-text">{summary}</div>'
+                    f'{reqs_html}'
+                    f'{fulldesc_html}'
+                    f'</div>',
+                    unsafe_allow_html=True
+                )
 
             with col_action:
                 st.markdown("<div style='padding-top:24px;display:flex;flex-direction:column;gap:10px;'>", unsafe_allow_html=True)
