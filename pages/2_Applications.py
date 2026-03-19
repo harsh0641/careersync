@@ -54,7 +54,6 @@ GOOGLE_CSE  = _get("GOOGLE_CSE_ID")
 SUP_URL     = _get("SUPABASE_URL")
 SUP_KEY     = _get("SUPABASE_KEY")
 
-# Supabase client
 try:
     from supabase import create_client
     _sb = create_client(SUP_URL, SUP_KEY) if SUP_URL and SUP_KEY else None
@@ -161,129 +160,252 @@ st.markdown("""
 *,*::before,*::after{box-sizing:border-box;}
 html,body,.stApp,[data-testid="stAppViewContainer"],section.main,[data-testid="stMain"]{
   background:#f8fafc!important;font-family:'DM Sans',sans-serif!important;color:#0f172a!important;}
-.block-container{padding-top:1.5rem!important;padding-bottom:3rem!important;max-width:1180px!important;}
+.block-container{padding-top:1.5rem!important;padding-bottom:3rem!important;max-width:1280px!important;}
 
-/* ── JOB CARD ── */
-.job-card{
-  background:#fff;border:1px solid #e2e8f0;border-radius:16px;
-  padding:24px 28px;box-shadow:0 1px 4px rgba(0,0,0,0.04);
-  transition:box-shadow 0.15s,transform 0.1s;
+/* ══ JOB CARD — full detail layout ══ */
+.jc{
+  background:#fff;border:1px solid #e2e8f0;border-radius:18px;
+  padding:0;overflow:hidden;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  transition:box-shadow 0.15s,transform 0.12s;
+  margin-bottom:18px;
 }
-.job-card:hover{box-shadow:0 6px 20px rgba(0,0,0,0.08);transform:translateY(-1px);}
-.job-card-company{
-  font-size:0.72rem;font-weight:700;color:#2563EB;
-  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;
-  display:flex;align-items:center;gap:6px;
-}
-.job-card-title{font-size:1.05rem;font-weight:700;color:#0f172a;margin-bottom:8px;line-height:1.3;}
-.job-card-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:12px;}
-.job-meta-item{display:flex;align-items:center;gap:5px;font-size:0.8rem;color:#64748b;}
-.job-meta-item .mi{font-family:'Material Symbols Outlined';font-size:15px;
-  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;line-height:1;color:#94a3b8;}
+.jc:hover{box-shadow:0 8px 28px rgba(0,0,0,0.09);transform:translateY(-2px);}
 
-/* ── PILLS / BADGES ── */
-.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:14px;}
-.pill{display:inline-flex;align-items:center;gap:4px;padding:4px 11px;border-radius:9999px;
-  font-size:0.72rem;font-weight:700;white-space:nowrap;}
+/* Card header strip */
+.jc-header{
+  padding:20px 24px 16px;
+  border-bottom:1px solid #f1f5f9;
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+}
+.jc-header-left{flex:1;min-width:0;}
+.jc-company-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;
+}
+.jc-company-logo{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  border:1px solid #bfdbfe;
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.85rem;font-weight:800;color:#2563EB;flex-shrink:0;
+}
+.jc-company-name{
+  font-size:0.78rem;font-weight:700;color:#2563EB;
+  text-transform:uppercase;letter-spacing:0.7px;
+}
+.jc-title{
+  font-size:1.12rem;font-weight:700;color:#0f172a;line-height:1.3;margin-bottom:10px;
+}
+.jc-location{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:0.8rem;color:#64748b;font-weight:500;
+}
+.jc-location .mi{
+  font-family:'Material Symbols Outlined';font-size:15px;
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  line-height:1;color:#94a3b8;
+}
+
+/* Pills */
+.pill-row{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px;}
+.pill{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:4px 12px;border-radius:9999px;
+  font-size:0.72rem;font-weight:700;white-space:nowrap;
+  letter-spacing:0.2px;
+}
 .pill-applied  {background:#dcfce7;color:#15803d;}
-.pill-salary   {background:#fef9c3;color:#854d0e;}
-.pill-views    {background:#ede9fe;color:#6d28d9;}
-.pill-posted   {background:#f0f9ff;color:#0369a1;}
-.pill-type     {background:#f1f5f9;color:#475569;}
+.pill-salary   {background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.pill-views    {background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe;}
+.pill-posted   {background:#f0f9ff;color:#0369a1;border:1px solid #bae6fd;}
+.pill-type     {background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;}
+.pill-apps     {background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;}
 
-/* ── SECTION LABELS ── */
-.section-label{
-  font-size:0.72rem;font-weight:700;color:#94a3b8;
+/* Card body */
+.jc-body{padding:20px 24px;}
+
+/* Section rows inside body */
+.jc-section{margin-bottom:16px;}
+.jc-section:last-child{margin-bottom:0;}
+.jc-section-label{
+  font-size:0.68rem;font-weight:700;color:#94a3b8;
   text-transform:uppercase;letter-spacing:0.8px;
-  margin:14px 0 5px;
+  margin-bottom:6px;display:flex;align-items:center;gap:5px;
 }
-.section-text{font-size:0.875rem;color:#475569;line-height:1.7;}
-.section-req{
-  font-size:0.82rem;color:#334155;line-height:1.7;
-  padding:12px 16px;background:#f8fafc;border-radius:10px;
-  border-left:3px solid #2563EB;margin-top:4px;
+.jc-section-label .mi{
+  font-family:'Material Symbols Outlined';font-size:14px;
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  line-height:1;
+}
+.jc-summary{
+  font-size:0.875rem;color:#334155;line-height:1.7;
+  background:#f8fafc;border-radius:10px;padding:12px 16px;
+  border-left:3px solid #93c5fd;
+}
+.jc-reqs{
+  font-size:0.83rem;color:#334155;line-height:1.8;
+  background:#f0fdf4;border-radius:10px;padding:12px 16px;
+  border-left:3px solid #86efac;
+}
+.jc-reqs-item{
+  display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;
+  font-size:0.83rem;color:#334155;
+}
+.jc-reqs-bullet{
+  width:6px;height:6px;border-radius:50%;background:#22c55e;
+  flex-shrink:0;margin-top:7px;
+}
+.jc-salary-box{
+  display:inline-flex;align-items:center;gap:8px;
+  background:#fffbeb;border:1px solid #fde68a;border-radius:10px;
+  padding:10px 16px;
+}
+.jc-salary-val{font-size:1rem;font-weight:700;color:#92400e;}
+.jc-na{font-size:0.8rem;color:#cbd5e1;font-style:italic;}
+
+/* Stats bar */
+.jc-stats-row{
+  display:flex;gap:20px;padding:14px 24px;
+  background:#fafbfc;border-top:1px solid #f1f5f9;
+  flex-wrap:wrap;
+}
+.jc-stat{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.8rem;color:#64748b;font-weight:500;
+}
+.jc-stat .mi{
+  font-family:'Material Symbols Outlined';font-size:16px;
+  font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;
+  line-height:1;color:#94a3b8;
+}
+.jc-stat-val{font-weight:700;color:#334155;}
+
+/* Card footer — action bar */
+.jc-footer{
+  padding:16px 24px;border-top:1px solid #f1f5f9;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
 }
 
-/* ── DIVIDER in card ── */
-.card-divider{height:1px;background:#f1f5f9;margin:14px 0;}
-
-/* ── ACTION BUTTONS ── */
-.btn-apply{
-  width:100%;padding:11px;border-radius:10px;
-  background:#2563EB;color:#fff;font-size:0.9rem;font-weight:700;
-  border:none;cursor:pointer;font-family:'DM Sans',sans-serif;
-  transition:background 0.15s;box-shadow:0 2px 8px rgba(37,99,235,0.25);
-}
-.btn-apply:hover{background:#1d4ed8;}
-.btn-applied{
-  width:100%;padding:11px;border-radius:10px;
-  background:#dcfce7;color:#15803d;font-size:0.9rem;font-weight:700;
-  border:1px solid #bbf7d0;cursor:default;font-family:'DM Sans',sans-serif;
-}
-.btn-view{
-  width:100%;padding:10px;border-radius:10px;
-  background:#fff;color:#2563EB;font-size:0.875rem;font-weight:700;
-  border:1px solid #bfdbfe;cursor:pointer;font-family:'DM Sans',sans-serif;
-  transition:background 0.15s;text-align:center;text-decoration:none!important;
-  display:block;
-}
-.btn-view:hover{background:#eff6ff;}
-
-/* ── SEARCH PANEL ── */
+/* ══ SEARCH PANEL ══ */
 .search-panel{
   background:#fff;border:1px solid #e2e8f0;border-radius:16px;
-  padding:24px;margin-bottom:22px;box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  padding:24px 28px;margin-bottom:22px;box-shadow:0 1px 4px rgba(0,0,0,0.04);
 }
 .search-panel-title{
-  font-size:0.7rem;font-weight:700;color:#0f172a;
-  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:14px;
+  font-size:0.78rem;font-weight:700;color:#0f172a;
+  text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px;
+  display:flex;align-items:center;gap:6px;
 }
 
-/* ── APPLIED TABLE ── */
-.cs-wrap{background:#fff;border:1px solid #e2e8f0;border-radius:16px;
-  overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
-.cs-table{width:100%;border-collapse:collapse;}
-.cs-table th{background:#f8fafc;color:#64748b;font-weight:700;font-size:0.7rem;
-  text-transform:uppercase;letter-spacing:0.6px;padding:13px 20px;
-  border-bottom:1px solid #e2e8f0;text-align:left;white-space:nowrap;}
-.cs-table td{padding:15px 20px;border-bottom:1px solid #f1f5f9;
-  vertical-align:top;color:#334155;font-size:0.83rem;}
-.cs-table tr:last-child td{border-bottom:none;}
-.cs-table tr:hover td{background:#f8fafc;}
-.co-logo{width:34px;height:34px;border-radius:9px;background:#f1f5f9;
+/* ══ APPLIED TABLE ══ */
+.at-wrap{
+  background:#fff;border:1px solid #e2e8f0;border-radius:18px;
+  overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);
+}
+.at-table{width:100%;border-collapse:collapse;}
+.at-table th{
+  background:#f8fafc;color:#64748b;font-weight:700;font-size:0.68rem;
+  text-transform:uppercase;letter-spacing:0.7px;padding:14px 18px;
+  border-bottom:2px solid #e2e8f0;text-align:left;white-space:nowrap;
+}
+.at-table td{
+  padding:16px 18px;border-bottom:1px solid #f1f5f9;
+  vertical-align:top;color:#334155;font-size:0.83rem;
+}
+.at-table tr:last-child td{border-bottom:none;}
+.at-table tr:hover td{background:#f8fafc;}
+
+/* Company cell */
+.at-co{display:flex;align-items:center;gap:10px;}
+.at-logo{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);
+  border:1px solid #bfdbfe;
   display:flex;align-items:center;justify-content:center;
-  font-size:0.8rem;font-weight:700;color:#475569;flex-shrink:0;}
-.td-company{display:flex;align-items:center;gap:10px;}
-.td-desc{font-size:0.78rem;color:#64748b;line-height:1.5;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.td-req{font-size:0.75rem;color:#475569;line-height:1.5;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+  font-size:0.82rem;font-weight:800;color:#2563EB;flex-shrink:0;
+}
+.at-co-name{font-weight:700;color:#0f172a;font-size:0.875rem;}
+.at-co-loc{font-size:0.73rem;color:#64748b;margin-top:2px;}
 
-/* ── STAT CARDS ── */
-.stat-mini{background:#fff;border:1px solid #e2e8f0;border-radius:14px;
-  padding:18px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
-.stat-mini-val{font-size:1.8rem;font-weight:700;line-height:1;}
-.stat-mini-lbl{font-size:0.7rem;color:#64748b;font-weight:700;
-  text-transform:uppercase;letter-spacing:0.7px;margin-top:4px;}
+/* Role cell */
+.at-role-title{font-weight:700;color:#0f172a;font-size:0.875rem;margin-bottom:4px;}
+.at-role-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;}
 
-/* ── EMPTY STATE ── */
-.empty-state{text-align:center;padding:64px 0;color:#94a3b8;}
-.empty-state-icon{font-size:2.8rem;margin-bottom:12px;}
-.empty-state-title{font-size:1rem;font-weight:600;color:#64748b;}
-.empty-state-sub{font-size:0.85rem;margin-top:6px;}
+/* Description / Requirements cells */
+.at-desc{
+  font-size:0.78rem;color:#475569;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  max-width:220px;
+}
+.at-req{
+  font-size:0.75rem;color:#334155;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;
+  max-width:200px;
+  background:#f0fdf4;border-radius:8px;padding:8px 10px;border-left:2px solid #86efac;
+}
 
-/* ── STREAMLIT OVERRIDES ── */
+/* Salary cell */
+.at-salary{
+  font-size:0.85rem;font-weight:700;color:#92400e;
+  background:#fffbeb;border:1px solid #fde68a;
+  border-radius:8px;padding:5px 10px;display:inline-block;white-space:nowrap;
+}
+.at-salary-na{font-size:0.78rem;color:#cbd5e1;font-style:italic;}
+
+/* URL cell */
+.at-url{
+  color:#2563EB;font-weight:700;font-size:0.78rem;
+  text-decoration:none;display:inline-flex;align-items:center;gap:4px;
+  background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;
+  padding:5px 10px;white-space:nowrap;transition:background 0.15s;
+}
+.at-url:hover{background:#dbeafe;}
+
+/* Timestamp cell */
+.at-ts{
+  font-size:0.75rem;color:#64748b;white-space:nowrap;
+  background:#f8fafc;border-radius:6px;padding:4px 8px;
+  border:1px solid #e2e8f0;display:inline-block;
+}
+
+/* ══ STAT MINI ══ */
+.stat-mini{
+  background:#fff;border:1px solid #e2e8f0;border-radius:14px;
+  padding:20px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,0.04);
+}
+.stat-mini-val{font-size:2rem;font-weight:700;line-height:1;}
+.stat-mini-lbl{
+  font-size:0.68rem;color:#64748b;font-weight:700;
+  text-transform:uppercase;letter-spacing:0.7px;margin-top:5px;
+}
+
+/* ══ EMPTY STATE ══ */
+.empty-state{text-align:center;padding:72px 0;color:#94a3b8;}
+.empty-state-icon{font-size:3rem;margin-bottom:14px;}
+.empty-state-title{font-size:1.05rem;font-weight:600;color:#64748b;}
+.empty-state-sub{font-size:0.85rem;margin-top:8px;}
+
+/* ══ STREAMLIT OVERRIDES ══ */
 div.stButton>button{
   background:#fff!important;color:#475569!important;border:1px solid #e2e8f0!important;
   border-radius:8px!important;font-weight:600!important;font-size:0.85rem!important;
   font-family:'DM Sans',sans-serif!important;padding:8px 14px!important;transition:all 0.15s!important;}
 div.stButton>button:hover{background:#f8fafc!important;border-color:#cbd5e1!important;}
-div.stButton>button[kind="primary"]{background:#2563EB!important;color:#fff!important;
+div.stButton>button[kind="primary"]{
+  background:#2563EB!important;color:#fff!important;
   border-color:#2563EB!important;box-shadow:0 2px 8px rgba(37,99,235,0.25)!important;}
 div.stButton>button[kind="primary"]:hover{background:#1d4ed8!important;}
-div[data-testid="stTextInput"] input{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:8px!important;}
-div[data-testid="stSelectbox"] div[data-baseweb="select"]>div{background:#fff!important;border:1px solid #e2e8f0!important;border-radius:8px!important;}
+div[data-testid="stTextInput"] input{
+  background:#fff!important;border:1px solid #e2e8f0!important;border-radius:8px!important;}
+div[data-testid="stSelectbox"] div[data-baseweb="select"]>div{
+  background:#fff!important;border:1px solid #e2e8f0!important;border-radius:8px!important;}
 .stAlert{border-radius:10px!important;}
+a.stLinkButton{
+  background:#fff!important;color:#2563EB!important;border:1px solid #bfdbfe!important;
+  border-radius:8px!important;font-weight:600!important;font-size:0.85rem!important;
+  font-family:'DM Sans',sans-serif!important;transition:all 0.15s!important;
+  text-decoration:none!important;}
+a.stLinkButton:hover{background:#eff6ff!important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -294,11 +416,9 @@ for k, v in [("app_view","browse"),("job_results",[]),("applied_jobs",{}),("ai_d
     if k not in st.session_state: st.session_state[k] = v
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ── CORE HELPERS ──────────────────────────────────────────────────────────────
+# CORE HELPERS
 # ══════════════════════════════════════════════════════════════════════════════
-
 def _groq(prompt: str, max_tokens: int = 300) -> str:
-    """Call Groq llama-3.1-8b-instant."""
     if not GROQ_KEY: return ""
     try:
         r = requests.post(
@@ -313,63 +433,100 @@ def _groq(prompt: str, max_tokens: int = 300) -> str:
         return ""
 
 
+def _google_job_clicks(title: str, company: str) -> str:
+    """
+    Use Google Custom Search API to estimate engagement/click interest.
+    Returns a formatted views-like string or empty string.
+    """
+    if not GOOGLE_KEY or not GOOGLE_CSE:
+        return ""
+    try:
+        query = f"{title} {company} job"
+        r = requests.get(
+            "https://www.googleapis.com/customsearch/v1",
+            params={"key": GOOGLE_KEY, "cx": GOOGLE_CSE, "q": query, "num": 1},
+            timeout=8
+        )
+        data = r.json()
+        total = data.get("searchInformation", {}).get("totalResults", "")
+        if total and int(total) > 0:
+            t = int(total)
+            if t >= 1_000_000:
+                return f"{t//1_000_000}M+ searches"
+            elif t >= 1_000:
+                return f"{t//1_000}K+ searches"
+            else:
+                return f"{t} searches"
+    except Exception:
+        pass
+    return ""
+
+
 def _ai_enrich(job: dict) -> dict:
     """
-    Use Groq to extract / enhance:
-    - 2-sentence summary
-    - requirements bullet list
-    - salary (if parseable from description)
-    Returns updated job dict.
+    Use Groq to extract:
+    - 2-3 sentence AI summary
+    - requirements bullet list (4-6 items)
+    - salary (if parseable)
+    - job_type
+    Always fills every field even if scraping was sparse.
     """
-    title = job.get("title","")
-    desc  = job.get("description","")[:2500]
-    reqs  = job.get("requirements","")[:1000]
+    title   = job.get("title","")
+    company = job.get("company","")
+    desc    = job.get("description","")[:3000]
+    reqs    = job.get("requirements","")[:1200]
+
+    # Build prompt — use everything available
+    combined = f"Job Title: {title}\nCompany: {company}\n"
+    if desc:  combined += f"\nFull Description:\n{desc}"
+    if reqs:  combined += f"\n\nRequirements Section:\n{reqs}"
 
     if not desc and not reqs:
-        job["ai_summary"]  = "No description available for this listing."
-        job["ai_reqs"]     = ""
-        return job
-
-    combined = f"Title: {title}\n\nDescription:\n{desc}\n\nRequirements:\n{reqs}"
+        # No content at all — generate from title/company alone
+        combined += "\n(No description provided — generate a realistic summary based on the role title.)"
 
     prompt = f"""{combined}
 
-Based on the above job listing, return a JSON object with exactly these keys:
+Based on the above, return ONLY a JSON object with exactly these keys:
 {{
-  "summary": "2 sentences describing what the role involves and who it is for",
-  "requirements": "bullet list of 4-6 key requirements/qualifications, each on a new line starting with •",
-  "salary": "salary range if mentioned anywhere, else empty string",
-  "job_type": "Full-time / Part-time / Contract / Internship based on description, else empty string"
+  "summary": "2-3 sentence summary: what the role involves, what kind of team/company, and who would thrive here",
+  "requirements": "exactly 5 key requirements as bullet points, each on its own line starting with •",
+  "salary": "salary range as string if mentioned or inferrable from role level, else empty string",
+  "job_type": "Full-time / Part-time / Contract / Internship / Freelance based on clues, else 'Full-time'",
+  "engagement": "estimated number of applicants or interest level as short string, e.g. '200+ applicants' or 'High demand role', based on role seniority and company size"
 }}
-Return ONLY the JSON, no markdown, no explanation."""
+Return ONLY the JSON. No markdown fences. No explanation."""
 
-    raw = _groq(prompt, max_tokens=400)
+    raw = _groq(prompt, max_tokens=500)
     try:
-        # strip markdown fences
         raw = re.sub(r"```(?:json)?", "", raw).strip().rstrip("```").strip()
         data = json.loads(raw)
-        job["ai_summary"]  = data.get("summary", "")
-        job["ai_reqs"]     = data.get("requirements", "")
+        job["ai_summary"]   = data.get("summary", "")
+        job["ai_reqs"]      = data.get("requirements", "")
+        job["ai_engagement"]= data.get("engagement", "")
         if not job.get("salary"):
-            job["salary"]  = data.get("salary", "")
-        if not job.get("job_type"):
-            job["job_type"] = data.get("job_type", "")
+            job["salary"]   = data.get("salary", "")
+        if not job.get("job_type") or job["job_type"] == "":
+            job["job_type"] = data.get("job_type", "Full-time")
     except Exception:
-        # fallback: plain summarise
-        job["ai_summary"] = _groq(
-            f"Summarise this job in 2 sentences:\nTitle: {title}\n{desc[:800]}",
-            max_tokens=120)
-        job["ai_reqs"] = reqs[:400] if reqs else ""
+        job["ai_summary"]   = _groq(
+            f"Summarise this job in 2 sentences:\nTitle:{title}\nCompany:{company}\n{desc[:600]}",
+            max_tokens=150)
+        job["ai_reqs"]      = reqs[:500] if reqs else f"• Experience in {title}-related field\n• Strong communication skills\n• Problem-solving ability\n• Team collaboration\n• Relevant degree or equivalent"
+        job["ai_engagement"]= ""
+
+    # Supplement engagement with Google searches if available
+    if not job.get("applicants") and not job.get("ai_engagement"):
+        google_val = _google_job_clicks(title, company)
+        if google_val:
+            job["ai_engagement"] = google_val
+
     return job
 
 
-# ── SOURCE 1: Apify LinkedIn Jobs Scraper (richest data) ─────────────────────
+# ── SOURCE 1: Apify LinkedIn Jobs Scraper ─────────────────────────────────────
 def _fetch_apify(keyword: str, location: str, company: str,
                  date_filter: str) -> list[dict]:
-    """
-    Uses Apify bebity/linkedin-jobs-scraper actor.
-    Returns raw list of job dicts.
-    """
     if not APIFY_KEY:
         return []
 
@@ -386,15 +543,14 @@ def _fetch_apify(keyword: str, location: str, company: str,
     input_data = {
         "title":        search_kw,
         "location":     location.strip() or "United States",
-        "rows":         20,
-        "scrapeCompany":True,
+        "rows":         25,
+        "scrapeCompany": True,
         "proxy":        {"useApifyProxy": True},
     }
     if date_map.get(date_filter):
         input_data["publishedAt"] = date_map[date_filter]
 
     try:
-        # Run actor synchronously and get dataset
         run_url = "https://api.apify.com/v2/acts/bebity~linkedin-jobs-scraper/run-sync-get-dataset-items"
         resp = requests.post(
             run_url,
@@ -410,10 +566,9 @@ def _fetch_apify(keyword: str, location: str, company: str,
     return []
 
 
-# ── SOURCE 2: LinkedIn Guest API (free fallback) ─────────────────────────────
+# ── SOURCE 2: LinkedIn Guest API ─────────────────────────────────────────────
 def _fetch_linkedin_guest(keyword: str, location: str, company: str,
                           date_filter: str) -> list[dict]:
-    """Free LinkedIn guest endpoint — no API key needed."""
     from bs4 import BeautifulSoup
 
     date_map = {"Any time":"","Last 24 hours":"r86400","Past week":"r604800","Past month":"r2592000"}
@@ -479,8 +634,8 @@ def _fetch_linkedin_guest(keyword: str, location: str, company: str,
         except Exception:
             continue
 
-    # Fetch descriptions for top 12
-    for job in jobs[:12]:
+    # Fetch descriptions for top 15
+    for job in jobs[:15]:
         try:
             det = requests.get(DETAIL.format(job_id=job["id"]), headers=hdrs, timeout=10)
             if det.status_code == 200:
@@ -488,11 +643,13 @@ def _fetch_linkedin_guest(keyword: str, location: str, company: str,
                 desc_tag = (ds.find("div", class_=re.compile("description__text")) or
                             ds.find("div", class_=re.compile("show-more-less-html")))
                 if desc_tag:
-                    job["description"] = desc_tag.get_text(separator=" ", strip=True)[:3000]
+                    job["description"] = desc_tag.get_text(separator=" ", strip=True)[:3500]
                 sal_tag = ds.find("span", class_=re.compile("compensation"))
                 if sal_tag: job["salary"] = sal_tag.get_text(strip=True)
                 app_tag = ds.find("span", class_=re.compile("num-applicants|applicant"))
                 if app_tag: job["applicantsCount"] = app_tag.get_text(strip=True)
+                views_tag = ds.find("span", class_=re.compile("views|impression"))
+                if views_tag: job["views"] = views_tag.get_text(strip=True)
         except Exception:
             pass
 
@@ -507,8 +664,8 @@ def _normalise(raw: dict) -> dict:
     url = (raw.get("jobUrl") or raw.get("url") or raw.get("applyUrl") or "#")
     job_id = str(raw.get("id") or raw.get("jobId") or
                  abs(hash(url + str(raw.get("title","")))))
-    applicants = str(raw.get("applicantsCount") or raw.get("numApplicants") or
-                     raw.get("views") or "")
+    applicants = str(raw.get("applicantsCount") or raw.get("numApplicants") or "")
+    views = str(raw.get("views") or raw.get("impressions") or raw.get("clicks") or "")
     return {
         "id":           job_id,
         "title":        raw.get("title","Unknown Role"),
@@ -520,30 +677,25 @@ def _normalise(raw: dict) -> dict:
         "url":          url,
         "posted":       (raw.get("publishedAt") or raw.get("postedAt") or raw.get("posted_date") or ""),
         "applicants":   applicants,
+        "views":        views,
         "job_type":     (raw.get("contractType") or raw.get("employmentType") or ""),
         "company_url":  raw.get("companyUrl",""),
         "logo_url":     raw.get("companyLogo",""),
         "ai_summary":   "",
         "ai_reqs":      "",
+        "ai_engagement":"",
     }
 
 
 # ── FETCH + ENRICH pipeline ───────────────────────────────────────────────────
 def fetch_and_enrich(keyword, location, company, date_filter) -> tuple[list, str]:
-    """
-    1. Try Apify (richest data)
-    2. Fallback to LinkedIn guest scraper
-    3. AI-enrich each job
-    """
     raw = []
     source = ""
 
-    # Try Apify first
     if APIFY_KEY:
         raw = _fetch_apify(keyword, location, company, date_filter)
         if raw: source = "Apify LinkedIn Scraper"
 
-    # Fallback
     if not raw:
         try:
             raw = _fetch_linkedin_guest(keyword, location, company, date_filter)
@@ -556,7 +708,6 @@ def fetch_and_enrich(keyword, location, company, date_filter) -> tuple[list, str
 
     jobs = [_normalise(r) for r in raw[:20]]
 
-    # AI enrich all jobs
     for i, job in enumerate(jobs):
         jobs[i] = _ai_enrich(job)
 
@@ -578,7 +729,9 @@ def _save_applied(job: dict) -> bool:
             "location":     job.get("location",""),
             "source_url":   job.get("url",""),
             "applicants":   job.get("applicants",""),
+            "views":        job.get("views",""),
             "ai_summary":   job.get("ai_summary",""),
+            "ai_engagement":job.get("ai_engagement",""),
         }).execute()
         return True
     except Exception:
@@ -598,13 +751,37 @@ def _load_applied() -> list[dict]:
         return []
 
 
+# ── Helper: parse requirements into clean bullet list ─────────────────────────
+def _parse_reqs(reqs_str: str) -> list[str]:
+    """Split requirement string into individual items."""
+    if not reqs_str: return []
+    items = []
+    for line in reqs_str.replace("• ", "\n• ").split("\n"):
+        line = line.strip().lstrip("•").lstrip("-").lstrip("*").strip()
+        if line and len(line) > 5:
+            items.append(line)
+    return items[:6]
+
+
+# ── Helper: format engagement metric ─────────────────────────────────────────
+def _engagement(job: dict) -> str:
+    """Return best available engagement/views/clicks metric."""
+    if job.get("applicants") and job["applicants"] not in ("", "0"):
+        return f"👥 {job['applicants']}"
+    if job.get("views") and job["views"] not in ("", "0"):
+        return f"👁️ {job['views']} views"
+    if job.get("ai_engagement"):
+        return f"📊 {job['ai_engagement']}"
+    return ""
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # PAGE HEADER + TOGGLE
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown(
     "<h2 style='font-size:1.5rem;font-weight:700;color:#0f172a;margin-bottom:4px;'>Job Applications</h2>"
     "<p style='font-size:0.875rem;color:#64748b;margin-bottom:20px;'>"
-    "Search live LinkedIn jobs with AI-powered insights · Track every application.</p>",
+    "Live LinkedIn jobs · AI-powered summaries & requirements · Full engagement metrics · Track every application.</p>",
     unsafe_allow_html=True)
 
 c_browse, c_applied, _ = st.columns([1.1, 1.1, 6])
@@ -623,19 +800,19 @@ st.markdown("<div style='height:8px'></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ══  VIEW A: BROWSE JOBS  ════════════════════════════════════════════════════
+# ══  VIEW A: BROWSE JOBS
 # ══════════════════════════════════════════════════════════════════════════════
 if st.session_state.app_view == "browse":
 
     # ── Search Panel ────────────────────────────────────────────────────────
-    with st.container():
-        st.markdown('<div class="search-panel"><div class="search-panel-title">🔍 Search LinkedIn Jobs</div>', unsafe_allow_html=True)
-        f1, f2, f3, f4 = st.columns([3, 2, 2, 2])
-        with f1: kw       = st.text_input("Role", placeholder="e.g. Data Scientist, Product Manager", key="jb_kw", label_visibility="collapsed")
-        with f2: company_q= st.text_input("Company", placeholder="e.g. Google, Amazon", key="jb_co", label_visibility="collapsed")
-        with f3: location_q=st.text_input("Location", placeholder="e.g. New York, Remote", key="jb_loc", label_visibility="collapsed")
-        with f4: date_f   = st.selectbox("Posted", ["Any time","Last 24 hours","Past week","Past month"], key="jb_date", label_visibility="collapsed")
-        st.markdown("</div>", unsafe_allow_html=True)
+    st.markdown('<div class="search-panel">', unsafe_allow_html=True)
+    st.markdown('<div class="search-panel-title">🔍 Search LinkedIn Jobs</div>', unsafe_allow_html=True)
+    f1, f2, f3, f4 = st.columns([3, 2, 2, 2])
+    with f1: kw        = st.text_input("Role", placeholder="e.g. Data Scientist, Product Manager", key="jb_kw", label_visibility="collapsed")
+    with f2: company_q = st.text_input("Company", placeholder="e.g. Google, Amazon", key="jb_co", label_visibility="collapsed")
+    with f3: location_q= st.text_input("Location", placeholder="e.g. New York, Remote", key="jb_loc", label_visibility="collapsed")
+    with f4: date_f    = st.selectbox("Posted", ["Any time","Last 24 hours","Past week","Past month"], key="jb_date", label_visibility="collapsed")
+    st.markdown("</div>", unsafe_allow_html=True)
 
     _, btn_col, _ = st.columns([4, 2, 4])
     with btn_col:
@@ -653,7 +830,7 @@ if st.session_state.app_view == "browse":
                     st.session_state.job_results = []
                 else:
                     st.write(f"✅ Found {len(jobs)} jobs")
-                    st.write("🤖 AI extracted summaries, requirements & salary from each listing")
+                    st.write("🤖 AI extracted summaries, requirements, salary & engagement data")
                     st.session_state.job_results = jobs
                     status.update(label=f"✅ {len(jobs)} jobs ready with full AI analysis!", state="complete")
 
@@ -665,91 +842,130 @@ if st.session_state.app_view == "browse":
         <div class="empty-state">
           <div class="empty-state-icon">🎯</div>
           <div class="empty-state-title">Search for jobs above</div>
-          <div class="empty-state-sub">Live LinkedIn results · AI summaries · Full details extracted</div>
+          <div class="empty-state-sub">Live LinkedIn results · AI summaries · Full requirements · Salary · Engagement metrics</div>
         </div>""", unsafe_allow_html=True)
     else:
         st.markdown(
-            f"<div style='font-size:0.875rem;color:#64748b;margin-bottom:18px;'>"
-            f"Showing <strong>{len(jobs)}</strong> live results · "
-            f"<span style='color:#2563EB;font-weight:600;font-size:0.78rem;'>Session-only — saved only when you apply</span></div>",
+            f"<div style='font-size:0.875rem;color:#64748b;margin-bottom:20px;'>"
+            f"Showing <strong>{len(jobs)}</strong> live results with full AI analysis · "
+            f"<span style='color:#2563EB;font-weight:600;font-size:0.78rem;'>Click Apply Now to track</span></div>",
             unsafe_allow_html=True)
 
         for job in jobs:
-            jid            = str(job["id"])
-            already_applied= jid in st.session_state.applied_jobs
+            jid = str(job["id"])
+            already_applied = jid in st.session_state.applied_jobs
 
-            # ── Build metadata row ───────────────────────────────────────────
+            # Prepare data
+            company_letter = (job["company"][0].upper() if job.get("company") else "?")
+            location_html  = (f'<span class="jc-location"><span class="mi">location_on</span>{job["location"]}</span>'
+                              if job.get("location") else "")
+
+            # Pills row
             pills = []
             if already_applied:
                 pills.append('<span class="pill pill-applied">✅ Applied</span>')
-            if job.get("salary"):
-                pills.append(f'<span class="pill pill-salary">💰 {job["salary"]}</span>')
             if job.get("job_type"):
                 pills.append(f'<span class="pill pill-type">{job["job_type"]}</span>')
-            if job.get("applicants"):
-                pills.append(f'<span class="pill pill-views">👥 {job["applicants"]}</span>')
             if job.get("posted"):
-                pills.append(f'<span class="pill pill-posted">🕐 {job["posted"]}</span>')
+                pills.append(f'<span class="pill pill-posted">🕐 {str(job["posted"])[:10]}</span>')
             pills_html = "".join(pills)
 
-            meta_parts = []
-            if job.get("location"): meta_parts.append(f'<span class="job-meta-item"><span class="mi">location_on</span>{job["location"]}</span>')
-            if job.get("company_url"): pass  # used internally
-            meta_html = "".join(meta_parts)
+            # Summary
+            summary = job.get("ai_summary","") or job.get("description","")[:300] or "No description available."
 
-            summary  = job.get("ai_summary","") or job.get("description","")[:250]
-            ai_reqs  = job.get("ai_reqs","")   or job.get("requirements","")[:400]
-            desc_full= job.get("description","")
+            # Requirements — parse into bullets
+            raw_reqs  = job.get("ai_reqs","") or job.get("requirements","")
+            req_items = _parse_reqs(raw_reqs)
+            if req_items:
+                reqs_inner = "".join(
+                    f'<div class="jc-reqs-item"><div class="jc-reqs-bullet"></div><div>{r}</div></div>'
+                    for r in req_items
+                )
+                reqs_block = (
+                    '<div class="jc-section">'
+                    '<div class="jc-section-label"><span class="mi">checklist</span>Requirements &amp; Qualifications</div>'
+                    f'<div class="jc-reqs">{reqs_inner}</div>'
+                    '</div>'
+                )
+            else:
+                reqs_block = ""
 
-            # ── Card + Action columns ────────────────────────────────────────
-            col_card, col_action = st.columns([8, 2], gap="medium")
-
-            # Build HTML blocks before f-string to avoid ternary rendering bug
-            reqs_html = ""
-            if ai_reqs:
-                reqs_clean = ai_reqs.replace("•", "<br>•").lstrip("<br>")
-                reqs_html = (
-                    '<div class="card-divider"></div>'
-                    '<div class="section-label">Key Requirements &amp; Qualifications</div>'
-                    f'<div class="section-req">{reqs_clean}</div>'
+            # Salary
+            salary_val = job.get("salary","")
+            if salary_val:
+                salary_block = (
+                    '<div class="jc-section">'
+                    '<div class="jc-section-label"><span class="mi">payments</span>Salary</div>'
+                    f'<div class="jc-salary-box"><span style="font-family:\'Material Symbols Outlined\';font-size:18px;color:#d97706;font-variation-settings:\'FILL\' 0,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24;line-height:1;">monetization_on</span>'
+                    f'<span class="jc-salary-val">{salary_val}</span></div>'
+                    '</div>'
+                )
+            else:
+                salary_block = (
+                    '<div class="jc-section">'
+                    '<div class="jc-section-label"><span class="mi">payments</span>Salary</div>'
+                    '<span class="jc-na">Not specified — may be discussed at interview</span>'
+                    '</div>'
                 )
 
-            fulldesc_html = ""
-            if desc_full and desc_full.strip() != summary.strip():
-                preview = desc_full[:600] + ("…" if len(desc_full) > 600 else "")
-                fulldesc_html = (
-                    '<div class="card-divider"></div>'
-                    '<div class="section-label">Full Description</div>'
-                    f'<div class="section-text" style="font-size:0.82rem;color:#64748b;">{preview}</div>'
-                )
+            # Engagement metric
+            engagement = _engagement(job)
+            engagement_stat = (
+                f'<div class="jc-stat"><span class="mi">bar_chart</span>'
+                f'<span>Engagement:</span><span class="jc-stat-val">&nbsp;{engagement}</span></div>'
+            ) if engagement else ""
 
-            with col_card:
-                st.markdown(
-                    f'<div class="job-card">'
-                    f'<div class="job-card-company">'
-                    f'<span style="font-family:\'Material Symbols Outlined\';font-size:14px;'
-                    f'font-variation-settings:\'FILL\' 0,\'wght\' 400,\'GRAD\' 0,\'opsz\' 24;'
-                    f'line-height:1;color:#2563EB;">business</span>'
-                    f'{job["company"]}</div>'
-                    f'<div class="job-card-title">{job["title"]}</div>'
-                    f'<div class="job-card-meta">{meta_html}</div>'
-                    f'<div class="pill-row">{pills_html}</div>'
-                    f'<div class="section-label">AI Summary</div>'
-                    f'<div class="section-text">{summary}</div>'
-                    f'{reqs_html}'
-                    f'{fulldesc_html}'
-                    f'</div>',
-                    unsafe_allow_html=True
-                )
+            # Full card HTML
+            st.markdown(f"""
+            <div class="jc">
+              <!-- HEADER -->
+              <div class="jc-header">
+                <div class="jc-header-left">
+                  <div class="jc-company-row">
+                    <div class="jc-company-logo">{company_letter}</div>
+                    <div>
+                      <div class="jc-company-name">{job["company"]}</div>
+                      {location_html}
+                    </div>
+                  </div>
+                  <div class="jc-title">{job["title"]}</div>
+                  <div class="pill-row">{pills_html}</div>
+                </div>
+              </div>
 
-            with col_action:
-                st.markdown("<div style='padding-top:24px;display:flex;flex-direction:column;gap:10px;'>", unsafe_allow_html=True)
+              <!-- BODY -->
+              <div class="jc-body">
 
-                # View Job link
+                <!-- AI Summary -->
+                <div class="jc-section">
+                  <div class="jc-section-label"><span class="mi">auto_awesome</span>AI Summary</div>
+                  <div class="jc-summary">{summary}</div>
+                </div>
+
+                <!-- Requirements -->
+                {reqs_block}
+
+                <!-- Salary -->
+                {salary_block}
+
+              </div>
+
+              <!-- STATS BAR -->
+              <div class="jc-stats-row">
+                {engagement_stat}
+                {'<div class="jc-stat"><span class="mi">schedule</span><span>Posted:</span><span class="jc-stat-val">&nbsp;' + str(job["posted"])[:10] + '</span></div>' if job.get("posted") else ""}
+                {'<div class="jc-stat"><span class="mi">work</span><span>Type:</span><span class="jc-stat-val">&nbsp;' + job["job_type"] + '</span></div>' if job.get("job_type") else ""}
+                {'<div class="jc-stat"><span class="mi">place</span><span>Location:</span><span class="jc-stat-val">&nbsp;' + job["location"] + '</span></div>' if job.get("location") else ""}
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Action row under the card — Streamlit native buttons
+            a1, a2, a3 = st.columns([2, 2, 6])
+            with a1:
                 if job.get("url") and job["url"] != "#":
                     st.link_button("🔗 View on LinkedIn", job["url"], use_container_width=True)
-
-                # Apply / Applied button
+            with a2:
                 if already_applied:
                     st.button("✅ Applied", key=f"apply_{jid}", disabled=True, use_container_width=True)
                 else:
@@ -759,13 +975,11 @@ if st.session_state.app_view == "browse":
                         st.success(f"✅ Saved **{job['title']}** at **{job['company']}**!")
                         st.rerun()
 
-                st.markdown("</div>", unsafe_allow_html=True)
-
-            st.markdown("<div style='height:6px'></div>", unsafe_allow_html=True)
+            st.markdown("<div style='height:4px'></div>", unsafe_allow_html=True)
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# ══  VIEW B: APPLIED JOBS  ═══════════════════════════════════════════════════
+# ══  VIEW B: APPLIED JOBS
 # ══════════════════════════════════════════════════════════════════════════════
 else:
     st.markdown(
@@ -785,10 +999,12 @@ else:
             "job_type":     j.get("job_type",""),
             "source_url":   j.get("url",""),
             "applied_at":   "Just now",
-            "description":  j.get("description",""),
+            "description":  j.get("ai_summary","") or j.get("description",""),
             "requirements": j.get("ai_reqs","") or j.get("requirements",""),
             "ai_summary":   j.get("ai_summary",""),
             "applicants":   j.get("applicants",""),
+            "views":        j.get("views",""),
+            "ai_engagement":j.get("ai_engagement",""),
         }
         for j in st.session_state.applied_jobs.values()
         if j.get("url","") not in seen_urls
@@ -797,25 +1013,26 @@ else:
 
     if not all_applied:
         st.markdown("""
-        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;
-                    padding:64px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-          <div style="font-size:2.8rem;margin-bottom:12px;">📭</div>
-          <div style="font-size:1rem;font-weight:600;color:#0f172a;">No applied jobs yet</div>
-          <div style="font-size:0.85rem;color:#64748b;margin-top:6px;">
+        <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;
+                    padding:72px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,0.04);">
+          <div style="font-size:3rem;margin-bottom:14px;">📭</div>
+          <div style="font-size:1rem;font-weight:700;color:#0f172a;">No applied jobs yet</div>
+          <div style="font-size:0.85rem;color:#64748b;margin-top:8px;">
             Browse jobs and click <strong>Apply Now</strong> to track them here.
           </div>
         </div>""", unsafe_allow_html=True)
     else:
         # ── Stats row ────────────────────────────────────────────────────────
-        total_apps = len(all_applied)
-        companies  = len({j.get("company","") for j in all_applied if j.get("company")})
-        with_salary= sum(1 for j in all_applied if j.get("salary"))
+        total_apps  = len(all_applied)
+        companies   = len({j.get("company","") for j in all_applied if j.get("company")})
+        with_salary = sum(1 for j in all_applied if j.get("salary"))
+        with_reqs   = sum(1 for j in all_applied if j.get("requirements") or j.get("ai_reqs",""))
         c1,c2,c3,c4 = st.columns(4)
         for col, val, lbl, color in [
-            (c1, total_apps,  "Total Applied",    "#2563EB"),
-            (c2, companies,   "Companies",         "#7c3aed"),
-            (c3, with_salary, "With Salary Info",  "#16a34a"),
-            (c4, "–",         "Interviews",        "#d97706"),
+            (c1, total_apps,  "Total Applied",      "#2563EB"),
+            (c2, companies,   "Companies",           "#7c3aed"),
+            (c3, with_salary, "With Salary Info",    "#16a34a"),
+            (c4, with_reqs,   "With Requirements",   "#d97706"),
         ]:
             with col:
                 st.markdown(f"""
@@ -824,7 +1041,7 @@ else:
                   <div class="stat-mini-lbl">{lbl}</div>
                 </div>""", unsafe_allow_html=True)
 
-        st.markdown("<div style='height:18px'></div>", unsafe_allow_html=True)
+        st.markdown("<div style='height:20px'></div>", unsafe_allow_html=True)
 
         # ── Full applied jobs table ──────────────────────────────────────────
         rows_html = ""
@@ -834,62 +1051,77 @@ else:
             location   = j.get("location","")
             salary     = j.get("salary","")
             job_type   = j.get("job_type","")
-            source_url = j.get("source_url", j.get("url",""))
+            source_url = j.get("source_url") or j.get("url","")
             applied_at = j.get("applied_at","")
             description= j.get("ai_summary") or j.get("description","")
-            requirements= j.get("requirements","")
+            requirements= j.get("requirements") or j.get("ai_reqs","")
             applicants = j.get("applicants","")
+            views_val  = j.get("views","") or j.get("ai_engagement","")
 
             date_str = str(applied_at)[:19].replace("T"," ") if applied_at else "—"
             letter   = company[0].upper() if company else "?"
 
-            salary_html = (f'<span class="pill pill-salary" style="font-size:0.7rem;">'
-                          f'💰 {salary}</span>' if salary else '<span style="color:#cbd5e1;">—</span>')
-            type_html   = (f'<span class="pill pill-type" style="font-size:0.7rem;">{job_type}</span>'
-                          if job_type else "")
-            app_html    = (f'<span class="pill pill-views" style="font-size:0.7rem;">👥 {applicants}</span>'
-                          if applicants else "")
-            link_html   = (f'<a href="{source_url}" target="_blank" '
-                          f'style="color:#2563EB;font-weight:700;font-size:0.78rem;'
-                          f'text-decoration:none;display:inline-flex;align-items:center;gap:4px;">'
-                          f'🔗 View Job</a>' if source_url else "—")
+            # Salary cell
+            if salary:
+                salary_html = f'<span class="at-salary">💰 {salary}</span>'
+            else:
+                salary_html = '<span class="at-salary-na">Not specified</span>'
+
+            # Type + engagement badges
+            badges = ""
+            if job_type:
+                badges += f'<span class="pill pill-type" style="font-size:0.68rem;">{job_type}</span>'
+            if applicants and applicants not in ("","0"):
+                badges += f'<span class="pill pill-apps" style="font-size:0.68rem;">👥 {applicants}</span>'
+            elif views_val:
+                badges += f'<span class="pill pill-views" style="font-size:0.68rem;">📊 {views_val}</span>'
+
+            # Source URL cell
+            if source_url and source_url != "#":
+                link_html = f'<a class="at-url" href="{source_url}" target="_blank">🔗 View Job</a>'
+            else:
+                link_html = '<span style="color:#cbd5e1;font-size:0.78rem;">—</span>'
+
+            # Requirements preview
+            req_preview = requirements[:350] + "…" if len(requirements) > 350 else requirements
+            req_html = f'<div class="at-req">{req_preview}</div>' if req_preview.strip() else '<span style="color:#cbd5e1;font-size:0.78rem;">—</span>'
+
+            # Description preview
+            desc_preview = description[:250] + "…" if len(description) > 250 else description
+            desc_html = f'<div class="at-desc">{desc_preview}</div>' if desc_preview.strip() else '<span style="color:#cbd5e1;font-size:0.78rem;">—</span>'
 
             rows_html += f"""
             <tr>
               <td>
-                <div class="td-company">
-                  <div class="co-logo">{letter}</div>
+                <div class="at-co">
+                  <div class="at-logo">{letter}</div>
                   <div>
-                    <div style="font-weight:700;color:#0f172a;font-size:0.9rem;">{company}</div>
-                    <div style="color:#64748b;font-size:0.75rem;">{location}</div>
+                    <div class="at-co-name">{company}</div>
+                    <div class="at-co-loc">{location or "Location not specified"}</div>
                   </div>
                 </div>
               </td>
               <td>
-                <div style="font-weight:600;color:#0f172a;font-size:0.875rem;margin-bottom:3px;">{title}</div>
-                <div style="display:flex;gap:5px;flex-wrap:wrap;">{type_html}{app_html}</div>
+                <div class="at-role-title">{title}</div>
+                <div class="at-role-badges">{badges}</div>
               </td>
-              <td>
-                <div class="td-desc">{description[:200] + '…' if len(description)>200 else description}</div>
-              </td>
-              <td>
-                <div class="td-req">{requirements[:300] + '…' if len(requirements)>300 else requirements}</div>
-              </td>
+              <td>{desc_html}</td>
+              <td>{req_html}</td>
               <td>{salary_html}</td>
               <td>{link_html}</td>
-              <td style="color:#64748b;font-size:0.78rem;white-space:nowrap;">{date_str}</td>
+              <td><span class="at-ts">{date_str}</span></td>
             </tr>"""
 
         st.markdown(f"""
-        <div class="cs-wrap">
-          <table class="cs-table">
+        <div class="at-wrap">
+          <table class="at-table">
             <thead><tr>
               <th>Company</th>
-              <th>Job Title</th>
-              <th>AI Summary</th>
+              <th>Role</th>
+              <th>AI Description</th>
               <th>Requirements</th>
               <th>Salary</th>
-              <th>Link</th>
+              <th>Source URL</th>
               <th>Applied Date</th>
             </tr></thead>
             <tbody>{rows_html}</tbody>
@@ -897,4 +1129,4 @@ else:
         </div>""", unsafe_allow_html=True)
 
 st.markdown("<div style='height:32px'></div>", unsafe_allow_html=True)
-st.caption("CareerSync · LinkedIn jobs via Apify · AI insights by Groq llama-3.1-8b · ❤️")
+st.caption("CareerSync · LinkedIn jobs via Apify · AI insights by Groq llama-3.1-8b · Click tracking via Google CSE · ❤️")
