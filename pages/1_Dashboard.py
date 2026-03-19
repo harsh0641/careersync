@@ -451,20 +451,6 @@ if "page" not in st.session_state:
 # ══════════════════════════════════════════════════════════════════════════════
 first_name = user.get("name","").split()[0] if user.get("name") else "there"
 
-st.markdown("""
-<div class="topbar">
-  <div class="topbar-search">
-    <span class="mi">search</span>
-    <input type="text" placeholder="Search applications, companies..."/>
-  </div>
-  <div class="topbar-actions">
-    <button class="btn-sync">
-      <span class="mi">mail</span> Sync Gmail
-    </button>
-    <button class="btn-notif"><span class="mi">notifications</span></button>
-  </div>
-</div>
-""", unsafe_allow_html=True)
 
 # Page title
 st.markdown(
