@@ -1,10 +1,3 @@
-pages/2_Applications.py — CareerSync Job Application Portal
-Data: Apify LinkedIn Jobs Scraper (richest data) + Groq AI extraction
-Fields: company, title, location, salary, description, requirements,
-        applicants/views, posted date, source URL
-Applied Jobs: saved to Supabase with all fields + timestamp
-"""
-
 import os, sys, json, re, time, requests
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)), "src"))
 
