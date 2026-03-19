@@ -73,6 +73,9 @@ with st.sidebar:
     @import url('https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700;9..40,800&display=swap');
     @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0&display=swap');
 
+    /* THIS HIDES THE DEFAULT STREAMLIT MENU (Fixes Double Text) */
+    [data-testid="stSidebarNav"] { display: none !important; }
+
     [data-testid="stSidebar"] {
       background: #fff !important;
       border-right: 1px solid #e2e8f0 !important;
@@ -620,7 +623,7 @@ if search:
          filtered.position.str.contains(search, case=False, na=False))
     filtered = filtered[m]
 if stage_f != "All": filtered = filtered[filtered.stage == stage_f]
-if rec_f == "Found":     filtered = filtered[filtered.linkedin_url.str.len() > 0]
+if rec_f == "Found":       filtered = filtered[filtered.linkedin_url.str.len() > 0]
 elif rec_f == "Not Found": filtered = filtered[filtered.linkedin_url.str.len() == 0]
 
 fkey = f"{search}|{stage_f}|{rec_f}"
@@ -683,7 +686,7 @@ def build_credits():
         state = {}
         SHOW = [
             ("google_cse", "Google Custom Search", "Search API calls",       "#2563EB", 750, 1000),
-            ("hunter",     "Hunter.io",             "Email finding credits",  "#22c55e", 12,  50),
+            ("hunter",     "Hunter.io",            "Email finding credits",  "#22c55e", 12,  50),
             ("groq",       "Groq AI",               "Cover letter generation","#a855f7", 88,  100),
         ]
         items = ""
@@ -705,7 +708,7 @@ def build_credits():
         state = credits_get_all()
         SHOW = [
             ("google_cse", "Google Custom Search", "Search API calls",       "#2563EB"),
-            ("hunter",     "Hunter.io",             "Email finding credits",  "#22c55e"),
+            ("hunter",     "Hunter.io",            "Email finding credits",  "#22c55e"),
             ("groq",       "Groq AI",               "AI generation calls",    "#a855f7"),
         ]
         items = ""
